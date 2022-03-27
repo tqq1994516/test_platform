@@ -5,19 +5,19 @@
 # @File : models.py
 # @Project : test_platform
 # @Description : models file
-from dataclasses import dataclass
 
 from tortoise import fields
 
-from common.models import DataModel
+from srf.models import DataModel
 
 
-@dataclass
 class ProjectInfo(DataModel):
     name = fields.CharField(50, description="项目名称")
     description = fields.TextField(description="项目描述")
-    masters = fields.ManyToManyField("system.Users", through='t_project_masters', related_name="project_masters", description="管理员")
-    members = fields.ManyToManyField("system.Users", through='t_project_members', related_name="project_members", description="项目成员")
+    masters = fields.ManyToManyField("system.Users", through='t_project_masters', related_name="project_masters",
+                                     description="管理员")
+    members = fields.ManyToManyField("system.Users", through='t_project_members', related_name="project_members",
+                                     description="项目成员")
 
     class Meta:
         table = 't_project_info'
@@ -27,12 +27,11 @@ class ProjectInfo(DataModel):
         return self.name
 
 
-@dataclass
 class Envs(DataModel):
     name = fields.CharField(50, description="环境名称")
     description = fields.TextField(description="环境描述")
     domain = fields.CharField(150, description="环境域名")
-    project = fields.ForeignKeyField("project_info.ProjectInfo", description="所属项目")
+    project = fields.ForeignKeyField("project_info.ProjectInfo", null=True, description="所属项目")
 
     class Meta:
         table = 't_envs'
@@ -42,14 +41,13 @@ class Envs(DataModel):
         return self.name
 
 
-@dataclass
 class Versions(DataModel):
     version_num = fields.CharField(50, description="版本号")
     start_time = fields.DatetimeField(null=True, description="开始时间")
     end_time = fields.DatetimeField(null=True, description="结束时间")
     is_activate = fields.BooleanField(default=True, description="是否激活")
     is_newest = fields.BooleanField(default=True, description="是否最新")
-    project = fields.ForeignKeyField("project_info.Envs", description="所属项目")
+    project = fields.ForeignKeyField("project_info.Envs", null=True, description="所属项目")
 
     class Meta:
         table = 't_versions'

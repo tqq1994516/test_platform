@@ -5,12 +5,11 @@
 # @File : models.py
 # @Project : test_platform
 # @Description : models file
-from dataclasses import dataclass
 from enum import IntEnum
 
 from tortoise import fields
 
-from common.models import DataModel
+from srf.models import DataModel
 
 
 class TestcaseType(IntEnum):
@@ -61,11 +60,10 @@ class OperationStepType(IntEnum):
     STEP = 2  # 步骤描述
 
 
-@dataclass
 class TestcaseSites(DataModel):
     name = fields.CharField(50, description="用例集名称")
     description = fields.CharField(150, description="用例集描述")
-    project = fields.ForeignKeyField("project_info.ProjectInfo", description="所属项目")
+    project = fields.ForeignKeyField("project_info.ProjectInfo", null=True, description="所属项目")
     priority = fields.IntEnumField(PriorityType, description="优先级")
     tags = fields.ManyToManyField("system.Tags", description="标签")
 
@@ -77,17 +75,17 @@ class TestcaseSites(DataModel):
         return self.name
 
 
-@dataclass
 class Testcases(DataModel):
     name = fields.CharField(50, description="用例名称")
     testcase_type = fields.IntEnumField(TestcaseType, description="用例类型")
-    testcase_site = fields.ForeignKeyField("testcase_manager.TestcaseSites", description="所属用例集")
+    testcase_site = fields.ForeignKeyField("testcase_manager.TestcaseSites", null=True, description="所属用例集")
     priority = fields.IntEnumField(PriorityType, description="优先级")
     tags = fields.ManyToManyField("system.Tags", description="标签")
     review = fields.IntEnumField(ReviewType, description="评审状态")
     result = fields.IntEnumField(ResultType, description="执行状态")
     level = fields.IntEnumField(LevelType, description="用例级别")
-    executors = fields.ManyToManyField("system.Users", through='t_testcase_executors', related_name="testcase_excutors", description="执行人")
+    executors = fields.ManyToManyField("system.Users", through='t_testcase_executors',
+                                       related_name="testcase_executors", description="执行人")
 
     class Meta:
         table = 't_testcases'
@@ -97,24 +95,25 @@ class Testcases(DataModel):
         return self.name
 
 
-@dataclass
 class TestcaseDetail(DataModel):
-    testcase = fields.ForeignKeyField("testcase_manager.Testcases", description="关联用例")
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
     precondition = fields.TextField(default="", description="前置条件")
     operation_steps_type = fields.IntEnumField(OperationStepType, description="操作步骤类型")
     operation_steps = fields.TextField(default="", description="文本操作步骤")
-    related_testcases = fields.ManyToManyField("testcase_manager.Testcases", through='t_testcase_detail_testcases', related_name="testcase_detail_testcases", description="关联用例")
-    related_tasks = fields.ManyToManyField("third_system.Tasks", through='t_testcase_detail_tasks', related_name="testcase_detail_tasks", description="关联需求")
-    related_bugs = fields.ManyToManyField("third_system.Bugs", through='t_testcase_detail_bugs', related_name="testcase_detail_bugs",description="关联缺陷")
+    related_testcases = fields.ManyToManyField("testcase_manager.Testcases", through='t_testcase_detail_testcases',
+                                               related_name="testcase_detail_testcases", description="关联用例")
+    related_tasks = fields.ManyToManyField("third_system.Tasks", through='t_testcase_detail_tasks',
+                                           related_name="testcase_detail_tasks", description="关联需求")
+    related_bugs = fields.ManyToManyField("third_system.Bugs", through='t_testcase_detail_bugs',
+                                          related_name="testcase_detail_bugs", description="关联缺陷")
 
     class Meta:
         table = 't_testcase_detail'
         table_description = "用例详情表"
 
 
-@dataclass
 class TestcaseOperationSteps(DataModel):
-    testcase = fields.ForeignKeyField("testcase_manager.Testcases", description="关联用例")
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
     operation_steps = fields.TextField(description="分步操作步骤")
     sort = fields.IntField(default=0, description="排序")
 
@@ -123,9 +122,8 @@ class TestcaseOperationSteps(DataModel):
         table_description = "用例操作步骤表"
 
 
-@dataclass
 class TestcaseDependence(DataModel):
-    testcase = fields.ForeignKeyField("testcase_manager.Testcases", description="关联用例")
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
     is_front = fields.BooleanField(default=True, description="是否前置")
     is_back = fields.BooleanField(default=False, description="是否后置")
     sort = fields.IntField(default=0, description="排序")
@@ -135,9 +133,8 @@ class TestcaseDependence(DataModel):
         table_description = "用例关系表"
 
 
-@dataclass
 class TestcaseFiles(DataModel):
-    testcase = fields.ForeignKeyField("testcase_manager.Testcases", description="关联用例")
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
     file_path = fields.CharField(max_length=200, description="文件地址")
 
     class Meta:
@@ -145,9 +142,8 @@ class TestcaseFiles(DataModel):
         table_description = "用例附件表"
 
 
-@dataclass
 class TestcaseComments(DataModel):
-    testcase = fields.ForeignKeyField("testcase_manager.Testcases", description="关联用例")
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
     comment = fields.TextField(description="备注")
 
     class Meta:
@@ -155,9 +151,8 @@ class TestcaseComments(DataModel):
         table_description = "用例备注表"
 
 
-@dataclass
 class TestcaseChangeLogs(DataModel):
-    testcase = fields.ForeignKeyField("testcase_manager.Testcases", description="关联用例")
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
     change_field = fields.CharField(max_length=50, description="修改字段")
     before = fields.TextField(default="", description="修改前")
     after = fields.TextField(default="", description="修改后")

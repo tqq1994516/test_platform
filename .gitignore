@@ -3,6 +3,7 @@ __pycache__/
 .benchmarks/
 data/.history/
 node_modules
+.vscode
 
 
 *.py[cod]

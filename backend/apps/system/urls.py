@@ -7,7 +7,7 @@
 # @Description : ...
 from srf.routes import ViewSetRouter
 
-from apps.system.views import UsersView, AppsView, GroupsView, RolesView, PermissionsView
+from apps.system.views import UsersView, AppsView, GroupsView, RolesView, PermissionsView, TagsView
 
 route = ViewSetRouter(True)
 route.register(UsersView, '/users', 'users')
@@ -15,4 +15,5 @@ route.register(AppsView, '/apps', 'apps')
 route.register(GroupsView, '/groups', 'groups')
 route.register(RolesView, '/roles', 'roles')
 route.register(PermissionsView, '/permissions', 'permissions')
+route.register(TagsView, '/tags', 'tags')
 urls = [] + route.urls

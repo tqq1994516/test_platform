@@ -7,8 +7,8 @@
 # @Description : launch file
 from apps import app
 
-from settings import HOST, PORT, AUTO_RELOAD, DEBUG, ACCESS_LOG
+from settings import HOST, PORT, AUTO_RELOAD, DEBUG, ACCESS_LOG, FAST
 
 
 if __name__ == '__main__':
-    app.run(host=HOST, port=PORT, auto_reload=AUTO_RELOAD, debug=DEBUG, access_log=ACCESS_LOG)
+    app.run(host=HOST, port=PORT, auto_reload=AUTO_RELOAD, debug=DEBUG, access_log=ACCESS_LOG, fast=FAST)

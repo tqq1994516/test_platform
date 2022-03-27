@@ -7,22 +7,53 @@
 # @Description : serializer file
 from srf import ModelSerializer
 
-from apps.project_info.models import ProjectInfo, Envs, Versions
+from apps.testcase_manager.models import TestcaseSites, Testcases, TestcaseDetail, TestcaseOperationSteps, \
+    TestcaseDependence, TestcaseFiles, TestcaseComments, TestcaseChangeLogs
 
 
-class ProjectInfoSerializer(ModelSerializer):
+class TestcaseSitesSerializer(ModelSerializer):
     class Meta:
-        model = ProjectInfo
+        model = TestcaseSites
         read_only_fields = 'id'
 
 
-class EnvsSerializer(ModelSerializer):
+class TestcasesSerializer(ModelSerializer):
     class Meta:
-        model = Envs
+        model = Testcases
         read_only_fields = 'id'
 
 
-class VersionsSerializer(ModelSerializer):
+class TestcaseDetailSerializer(ModelSerializer):
     class Meta:
-        model = Versions
+        model = TestcaseDetail
+        read_only_fields = 'id'
+
+
+class TestcaseOperationStepsSerializer(ModelSerializer):
+    class Meta:
+        model = TestcaseOperationSteps
+        read_only_fields = 'id'
+
+
+class TestcaseDependenceSerializer(ModelSerializer):
+    class Meta:
+        model = TestcaseDependence
+        read_only_fields = 'id'
+
+
+class TestcaseFilesSerializer(ModelSerializer):
+    class Meta:
+        model = TestcaseFiles
+        read_only_fields = 'id'
+
+
+class TestcaseCommentsSerializer(ModelSerializer):
+    class Meta:
+        model = TestcaseComments
+        read_only_fields = 'id'
+
+
+class TestcaseChangeLogsSerializer(ModelSerializer):
+    class Meta:
+        model = TestcaseChangeLogs
         read_only_fields = 'id'

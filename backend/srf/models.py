@@ -14,7 +14,7 @@ class BaseModel(Model):
     def __str__(self):
         return self.id
 
-    id = fields.BigIntField(pk=True)
+    id = fields.BigIntField(pk=True, default=1, null=False, unique=True, index=True, description="id 主键")
     c_time = fields.DatetimeField(auto_now_add=True, null=True, description='创建时间')
     u_time = fields.DatetimeField(auto_now=True, null=True, description='最后更新时间')
 

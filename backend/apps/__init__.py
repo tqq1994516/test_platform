@@ -5,10 +5,10 @@
 # @File : __init__.py.py
 # @Project : test_platform
 # @Description : ...
+import importlib
 import logging
 from pathlib import Path
 
-import aioredis
 from sanic import Sanic
 from sanic_babel import Babel
 from sanic_jwt import Initialize
@@ -44,7 +44,8 @@ def create_app():
         key = f'refresh_token_{user_id}'
         return get_value(sanic_app.ctx.redis, key)
 
-    Initialize(sanic_app, authenticate=JWTAuthentication.authenticate, store_refresh_token=store_refresh_token, retrieve_refresh_token=retrieve_refresh_token)
+    Initialize(sanic_app, authenticate=JWTAuthentication.authenticate, store_refresh_token=store_refresh_token,
+               retrieve_refresh_token=retrieve_refresh_token)
     register_tortoise(
         sanic_app, db_url=sanic_app.config.get('DB_CONNECT_STR'), modules=sanic_app.ctx.apps.models
         , generate_schemas=True
@@ -54,7 +55,6 @@ def create_app():
 
 app = create_app()
 app.ext.openapi.describe(APP_NAME + " API", version=API_VERSION, description='用以web查看调试系统api')
-
 
 # 此为迁移配置
 TORTOISE_ORM = {
@@ -71,3 +71,6 @@ for name, val in app.ctx.apps.models.items():
         "models": val,
         "default_connection": "default",
     }
+
+# 延时加载
+importlib.import_module('signals')

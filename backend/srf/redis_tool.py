@@ -8,7 +8,17 @@
 
 async def set_value(redis, key, value):
     await redis.execute_command("set", key, value)
+    await redis.execute_command("expireat", key, value)
 
 
 async def get_value(redis, key):
     return await redis.execute_command("get", key)
+
+
+async def set_json_value(redis, key, value):
+    await redis.json().execute_command("set", key, value)
+    await redis.json().execute_command("expireat", key, value)
+
+
+async def get_json_value(redis, key):
+    return await redis.json().execute_command("get", key)

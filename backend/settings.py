@@ -11,12 +11,18 @@ import os
 from srf.authentication import JWTAuthentication
 
 IS_DEBUG = True
+TIME_OUT = 60
 APP_NAME = "test_platform"
 HOST = '0.0.0.0'
 PORT = 8800
 DEBUG = IS_DEBUG
 ACCESS_LOG = IS_DEBUG
 AUTO_RELOAD = True
+FAST = True
+KEEP_ALIVE_TIMEOUT = TIME_OUT
+REQUEST_TIMEOUT = TIME_OUT
+RESPONSE_TIMEOUT = TIME_OUT
+OAS_UI_DEFAULT = "swagger"
 
 # Apps config
 AUTO_LOAD_APPS = True
@@ -39,7 +45,7 @@ REDIS_PORT = 16379
 # REDIS_SSL = None
 REDIS_ENCODING = "utf-8"
 REDIS_DECODE_RESPONSES = True
-# REDIS_PASSWORD = ''
+REDIS_PASSWORD = '123456'
 
 # Accessory app config
 UPLOAD_PATH = os.path.join(os.getcwd(), 'upload')

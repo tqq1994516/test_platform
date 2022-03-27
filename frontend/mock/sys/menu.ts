@@ -235,26 +235,6 @@ const linkRoute = {
   ],
 };
 
-const testTraceRoute = {
-  path: '/testTrace',
-  name: 'TestTrace',
-  component: 'LAYOUT',
-  meta: {
-    icon: 'ion:tv-outline',
-    title: 'routes.testTrace.testTrace.title',
-  },
-  children: [
-    {
-      path: 'testPlan',
-      name: 'TestPlan',
-      meta: {
-        title: 'routes.testTrace.testPlan.title',
-      },
-      component: '/testTrace/testPlan/index',
-    },
-  ],
-};
-
 export default [
   {
     url: '/basic-api/getMenuList',
@@ -274,7 +254,7 @@ export default [
       switch (id) {
         case '1':
           dashboardRoute.redirect = dashboardRoute.path + '/' + dashboardRoute.children[0].path;
-          menu = [dashboardRoute, authRoute, levelRoute, sysRoute, linkRoute, testTraceRoute];
+          menu = [dashboardRoute, authRoute, levelRoute, sysRoute, linkRoute];
           break;
         case '2':
           dashboardRoute.redirect = dashboardRoute.path + '/' + dashboardRoute.children[1].path;

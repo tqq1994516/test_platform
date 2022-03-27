@@ -7,13 +7,20 @@
 # @Description : serializer file
 from srf import ModelSerializer
 
-from apps.system.models import Users, Groups, Roles, Apps, Permissions
+from apps.system.models import Users, Groups, Roles, Apps, Permissions, Tags
 
 
 class UsersSerializer(ModelSerializer):
     class Meta:
         model = Users
         read_only_fields = 'id'
+        exclude = ('password', 'is_online')
+
+
+class LoginSerializer(ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ('username', 'password')
 
 
 class AppsSerializer(ModelSerializer):
@@ -37,4 +44,10 @@ class RolesSerializer(ModelSerializer):
 class PermissionsSerializer(ModelSerializer):
     class Meta:
         model = Permissions
+        read_only_fields = 'id'
+
+
+class TagsSerializer(ModelSerializer):
+    class Meta:
+        model = Tags
         read_only_fields = 'id'

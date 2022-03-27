@@ -5,15 +5,12 @@
 # @File : models.py
 # @Project : test_platform
 # @Description : models file
-from dataclasses import dataclass
-from enum import IntEnum
 
 from tortoise import fields
 
-from common.models import DataModel, BaseModel
+from srf.models import DataModel
 
 
-@dataclass
 class Tasks(DataModel):
     name = fields.CharField(50, description="需求名称")
 
@@ -25,7 +22,6 @@ class Tasks(DataModel):
         return self.name
 
 
-@dataclass
 class Bugs(DataModel):
     name = fields.CharField(50, description="缺陷名称")
 
