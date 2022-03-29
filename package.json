@@ -25,12 +25,20 @@
     "vue-eslint-parser": "^8.3.0"
   },
   "scripts": {
-    "changelog": "conventional-changelog -p gitmoji-config -i CHANGELOG.md -s && git add CHANGELOG.md && git rebase HEAD^ && git commit --amend",
+    "commit": "git add . && git cz",
+    "push": "npm run changelog && git push origin master",
+    "changelog": "conventional-changelog -p gitmoji-config -i CHANGELOG.md -s && git rebase HEAD^ && git add CHANGELOG.md && git commit --amend",
     "release": "standard-version --preset gitmoji-config",
     "lint:eslint": "eslint --cache --max-warnings 0  \"frontend/{src,mock}/**/*.{vue,ts,tsx}\" --fix",
     "lint:prettier": "prettier --write  \"frontend/src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:stylelint": "stylelint --cache --fix \"frontend/**/*.{vue,less,postcss,css,scss}\" --cache --cache-location node_modules/.cache/stylelint/",
-    "lint:lint-staged": "lint-staged"
+    "lint:lint-staged": "lint-staged",
+    "prepare": "husky install"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
