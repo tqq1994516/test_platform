@@ -7,8 +7,9 @@
 # @Description : project settings
 import os
 
+
 # Web app cofing
-from srf.authentication import JWTAuthentication
+from srf.constant import ALL_METHOD
 
 IS_DEBUG = True
 TIME_OUT = 60
@@ -17,12 +18,14 @@ HOST = '0.0.0.0'
 PORT = 8800
 DEBUG = IS_DEBUG
 ACCESS_LOG = IS_DEBUG
-AUTO_RELOAD = True
+AUTO_RELOAD = False
 FAST = True
 KEEP_ALIVE_TIMEOUT = TIME_OUT
 REQUEST_TIMEOUT = TIME_OUT
 RESPONSE_TIMEOUT = TIME_OUT
 OAS_UI_DEFAULT = "swagger"
+USER_MODEL = 'apps.system.models.Users'
+TTL = 60 * 8
 
 # Apps config
 AUTO_LOAD_APPS = True
@@ -35,7 +38,7 @@ DB_USER = 'root'
 DB_PASSWORD = '123456'
 DB_HOST = '121.37.251.10'
 DB_PORT = '63306'
-DB_NAME = 't_sp'
+DB_NAME = APP_NAME
 DB_CONNECT_STR = f'mysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
 # Redis Config
@@ -46,6 +49,8 @@ REDIS_PORT = 16379
 REDIS_ENCODING = "utf-8"
 REDIS_DECODE_RESPONSES = True
 REDIS_PASSWORD = '123456'
+REDIS_TTL = TTL
+CACHE_REFRESH_PREFIX = "refresh_token_"
 
 # Accessory app config
 UPLOAD_PATH = os.path.join(os.getcwd(), 'upload')
@@ -54,17 +59,9 @@ OSS_ID = None
 OSS_SECRET = None
 
 # JWT config
-SANIC_JWT_AUTHORIZATION_HEADER = JWTAuthentication.keyword
 SANIC_JWT_REFRESH_TOKEN_ENABLED = True
+SANIC_JWT_EXPIRATION_DELTA = TTL
 SANIC_JWT_SECRET = "U#+ivP*,oCX6}3?WC.6|Y"
 
-CORS_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-    'VIEW',
-]
-CORS_ALLOW_HEADERS = [JWTAuthentication.keyword]
+# cors config
+CORS_METHODS = list(ALL_METHOD)

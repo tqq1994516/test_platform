@@ -11,8 +11,6 @@
 from collections import namedtuple
 
 # 默认分组
-from pprint import pprint
-
 Route = namedtuple('Route', ['url', 'mapping', 'name', 'detail', 'initkwargs', 'is_base'])
 
 

@@ -16,6 +16,12 @@ class TagType(IntEnum):
     OTHER = 99  # 其他
 
 
+class GenderType(IntEnum):
+    MALE = 0  # 男
+    FEMALE = 1  # 女
+    OTHER = 99  # 未知
+
+
 class Users(DataModel):
     username = fields.CharField(50, unique=True, description="用户名")
     password = fields.CharField(50, description="密码")
@@ -23,6 +29,7 @@ class Users(DataModel):
     last_name = fields.CharField(50, null=True, description="名")
     mobile = fields.CharField(11, null=True, unique=True, description="手机号")
     email = fields.CharField(50, null=True, description="邮箱")
+    gender = fields.IntEnumField(GenderType, default=1, description="性别")
     is_active = fields.BooleanField(default=True, description="是否激活")
     is_online = fields.BooleanField(default=False, description="是否在线")
     apps = fields.ManyToManyField("system.Apps", through="t_users_apps", related_name="users_apps", description="开通应用")
@@ -40,10 +47,13 @@ class Users(DataModel):
     def __str__(self):
         return self.username
 
+    def to_dict(self):
+        return {"user_id": self.id, "username": self.username}
+
 
 class Apps(DataModel):
-    name = fields.CharField(50, description="应用名称")
-    description = fields.CharField(150, description="应用描述")
+    name = fields.CharField(50, unique=True, description="应用名称")
+    description = fields.CharField(150, default='', null=True, description="应用描述")
 
     class Meta:
         table = "t_apps"
@@ -54,8 +64,8 @@ class Apps(DataModel):
 
 
 class Models(DataModel):
-    name = fields.CharField(50, description="模块名称")
-    description = fields.CharField(150, null=True, description="模块描述")
+    name = fields.CharField(50, unique=True, description="模块名称")
+    description = fields.CharField(150, default='', null=True, description="模块描述")
 
     class Meta:
         table = "t_models"
@@ -66,8 +76,8 @@ class Models(DataModel):
 
 
 class Groups(DataModel):
-    name = fields.CharField(50, description="用户组名称")
-    description = fields.CharField(150, description="用户组描述")
+    name = fields.CharField(50, unique=True, description="用户组名称")
+    description = fields.CharField(150, default='', null=True, description="用户组描述")
     roles = fields.ManyToManyField("system.Roles", description="角色")
 
     class Meta:
@@ -79,8 +89,8 @@ class Groups(DataModel):
 
 
 class Roles(DataModel):
-    name = fields.CharField(50, description="角色名称")
-    description = fields.CharField(150, description="角色描述")
+    name = fields.CharField(50, unique=True, description="角色名称")
+    description = fields.CharField(150, default='', null=True, description="角色描述")
     permission = fields.ManyToManyField("system.Permissions", description="权限")
 
     class Meta:
@@ -93,7 +103,7 @@ class Roles(DataModel):
 
 class Permissions(DataModel):
     name = fields.CharField(50, description="权限名称")
-    description = fields.CharField(150, description="权限描述")
+    description = fields.CharField(150, default='', null=True, description="权限描述")
     models = fields.ForeignKeyField("system.Models", null=True, description="所属模块")
 
     class Meta:
@@ -105,9 +115,9 @@ class Permissions(DataModel):
 
 
 class Tags(DataModel):
-    name = fields.CharField(50, description="标签名称")
+    name = fields.CharField(50, unique=True, description="标签名称")
     tag_type = fields.IntEnumField(TagType, description="标签类型")
-    description = fields.CharField(150, description="标签描述")
+    description = fields.CharField(150, default='', null=True, description="标签描述")
 
     class Meta:
         table = "t_tags"

@@ -35,12 +35,12 @@ class RedisExtension(BaseExtension):
     def get_config(self, app):
         connection_uri = (
             self.get_from_app_config(app, 'REDIS_HOST'),
+            self.get_from_app_config(app, 'REDIS_PASSWORD', None),
             self.get_from_app_config(app, 'REDIS_PORT'),
         )
         config = {
-            "url": f"redis://{connection_uri[0]}:{connection_uri[1]}",
+            "url": f"redis://{connection_uri[0]}@{connection_uri[1]}:{connection_uri[2]}",
             "db": self.get_from_app_config(app, 'REDIS_DATABASE', None),
-            "password": self.get_from_app_config(app, 'REDIS_PASSWORD', None),
             "ssl": self.get_from_app_config(app, 'REDIS_SSL', None),
             "encoding": self.get_from_app_config(app, 'REDIS_ENCODING', None),
             "decode_responses": self.get_from_app_config(app, 'REDIS_DECODE_RESPONSES', True)

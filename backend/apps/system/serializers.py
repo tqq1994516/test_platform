@@ -17,12 +17,6 @@ class UsersSerializer(ModelSerializer):
         exclude = ('password', 'is_online')
 
 
-class LoginSerializer(ModelSerializer):
-    class Meta:
-        model = Users
-        fields = ('username', 'password')
-
-
 class AppsSerializer(ModelSerializer):
     class Meta:
         model = Apps

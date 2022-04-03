@@ -85,3 +85,8 @@ class AppStructureError(Exception):
 class PluginInitializationFailure(Exception):
     # 插件初始化异常
     pass
+
+
+class ConfigError(Exception):
+    # 配置异常异常
+    pass

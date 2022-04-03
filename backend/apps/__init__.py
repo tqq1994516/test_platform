@@ -17,9 +17,9 @@ from tortoise.contrib.sanic import register_tortoise
 from srf.redis_tool import set_value, get_value
 from srf.app_helper import AppsHelper
 from srf.request import SRFRequest
-from srf.authentication import JWTAuthentication
+from srf.authentication import authenticate, logout_register
 from srf.redis_ext import RedisExtension
-from settings import APP_NAME, API_VERSION
+from settings import APP_NAME, API_VERSION, CACHE_REFRESH_PREFIX
 
 logging.basicConfig(filename="access.log")
 
@@ -36,20 +36,23 @@ def create_app():
     AppsHelper(sanic_app)
     RedisExtension(sanic_app)
 
-    def store_refresh_token(user_id, refresh_token, *args, **kwargs):
-        key = f'refresh_token_{user_id}'
-        set_value(sanic_app.ctx.redis, key, refresh_token)
+    async def store_refresh_token(user_id, refresh_token, *args, **kwargs):
+        key = f'{CACHE_REFRESH_PREFIX}{user_id}'
+        await set_value(sanic_app.ctx.redis, key, refresh_token)
 
-    def retrieve_refresh_token(request, user_id, *args, **kwargs):
-        key = f'refresh_token_{user_id}'
-        return get_value(sanic_app.ctx.redis, key)
+    async def retrieve_refresh_token(request, user_id, *args, **kwargs):
+        key = f'{CACHE_REFRESH_PREFIX}{user_id}'
+        return await get_value(sanic_app.ctx.redis, key)
 
-    Initialize(sanic_app, authenticate=JWTAuthentication.authenticate, store_refresh_token=store_refresh_token,
-               retrieve_refresh_token=retrieve_refresh_token)
-    register_tortoise(
-        sanic_app, db_url=sanic_app.config.get('DB_CONNECT_STR'), modules=sanic_app.ctx.apps.models
-        , generate_schemas=True
-    )
+    Initialize(sanic_app,
+               authenticate=authenticate,
+               store_refresh_token=store_refresh_token,
+               retrieve_refresh_token=retrieve_refresh_token,
+               class_views=logout_register)
+    register_tortoise(sanic_app,
+                      db_url=sanic_app.config.get('DB_CONNECT_STR'),
+                      modules=sanic_app.ctx.apps.models,
+                      generate_schemas=True)
     return sanic_app
 
 

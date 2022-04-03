@@ -61,10 +61,10 @@ class OperationStepType(IntEnum):
 
 
 class TestcaseSites(DataModel):
-    name = fields.CharField(50, description="用例集名称")
-    description = fields.CharField(150, description="用例集描述")
+    name = fields.CharField(50, unique=True, description="用例集名称")
+    description = fields.CharField(150, default='', null=True, description="用例集描述")
     project = fields.ForeignKeyField("project_info.ProjectInfo", null=True, description="所属项目")
-    priority = fields.IntEnumField(PriorityType, description="优先级")
+    priority = fields.IntEnumField(PriorityType, default=2, description="优先级")
     tags = fields.ManyToManyField("system.Tags", description="标签")
 
     class Meta:
@@ -79,11 +79,11 @@ class Testcases(DataModel):
     name = fields.CharField(50, description="用例名称")
     testcase_type = fields.IntEnumField(TestcaseType, description="用例类型")
     testcase_site = fields.ForeignKeyField("testcase_manager.TestcaseSites", null=True, description="所属用例集")
-    priority = fields.IntEnumField(PriorityType, description="优先级")
+    priority = fields.IntEnumField(PriorityType, default=2, description="优先级")
     tags = fields.ManyToManyField("system.Tags", description="标签")
-    review = fields.IntEnumField(ReviewType, description="评审状态")
-    result = fields.IntEnumField(ResultType, description="执行状态")
-    level = fields.IntEnumField(LevelType, description="用例级别")
+    review = fields.IntEnumField(ReviewType, default=2, description="评审状态")
+    result = fields.IntEnumField(ResultType, default=1, description="执行状态")
+    level = fields.IntEnumField(LevelType, default=0, description="用例级别")
     executors = fields.ManyToManyField("system.Users", through='t_testcase_executors',
                                        related_name="testcase_executors", description="执行人")
 
@@ -97,7 +97,7 @@ class Testcases(DataModel):
 
 class TestcaseDetail(DataModel):
     testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
-    precondition = fields.TextField(default="", description="前置条件")
+    precondition = fields.TextField(default="", null=True, description="前置条件")
     operation_steps_type = fields.IntEnumField(OperationStepType, description="操作步骤类型")
     operation_steps = fields.TextField(default="", description="文本操作步骤")
     related_testcases = fields.ManyToManyField("testcase_manager.Testcases", through='t_testcase_detail_testcases',
@@ -114,7 +114,7 @@ class TestcaseDetail(DataModel):
 
 class TestcaseOperationSteps(DataModel):
     testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
-    operation_steps = fields.TextField(description="分步操作步骤")
+    operation_steps = fields.TextField(default='', description="分步操作步骤")
     sort = fields.IntField(default=0, description="排序")
 
     class Meta:
@@ -144,7 +144,7 @@ class TestcaseFiles(DataModel):
 
 class TestcaseComments(DataModel):
     testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
-    comment = fields.TextField(description="备注")
+    comment = fields.TextField(default='', description="备注")
 
     class Meta:
         table = 't_testcase_comments'

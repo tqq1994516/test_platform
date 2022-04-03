@@ -13,6 +13,7 @@ from srf.models import DataModel
 
 class Tasks(DataModel):
     name = fields.CharField(50, description="需求名称")
+    related_id = fields.BigIntField(description='关联id')
 
     class Meta:
         table = 't_tasks'
@@ -24,6 +25,7 @@ class Tasks(DataModel):
 
 class Bugs(DataModel):
     name = fields.CharField(50, description="缺陷名称")
+    related_id = fields.BigIntField(description='关联id')
 
     class Meta:
         table = 't_bugs'

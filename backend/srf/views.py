@@ -19,14 +19,12 @@ from datetime import datetime
 
 from sanic.log import logger
 from sanic.response import json, HTTPResponse
-from sanic_jwt import protected
+from sanic_jwt import protected, Authentication
 
-from srf.authentication import BaseAuthentication
 from ujson import dumps
 from tortoise.exceptions import IntegrityError
 from tortoise.transactions import in_transaction
-
-from srf.constant import ALL_METHOD, DEFAULT_METHOD_MAP
+from sanic.views import HTTPMethodView
 from srf.exceptions import APIException, ValidationException
 from srf.permissions import BasePermission, ViewMapPermission
 from srf.status import RuleStatus, HttpStatus
@@ -79,7 +77,7 @@ class BaseView:
         return await run_awaitable(handler, request, *args, **kwargs)
 
 
-class APIView(BaseView):
+class APIView(HTTPMethodView):
     """通用视图，可以基于其实现增删改查，提供权限套件"""
     authentication_classes = ()
     permission_classes = ()
@@ -167,7 +165,7 @@ class APIView(BaseView):
         """
         authentications = []
         for auth in self.authentication_classes:
-            if isinstance(auth, BaseAuthentication):
+            if isinstance(auth, Authentication):
                 authentications.append(auth)
             else:
                 authentications.append(auth)
@@ -229,6 +227,7 @@ class APIView(BaseView):
         """
         在请求分发之前执行初始化操作，用于检查权限及检查基础内容
         """
-        await self.check_authentication(request)
+        # jwt protected装饰器已取代authentication类
+        # await self.check_authentication(request)
         await self.check_permissions(request)
         await self.check_throttles(request)

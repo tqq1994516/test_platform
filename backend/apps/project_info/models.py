@@ -12,8 +12,8 @@ from srf.models import DataModel
 
 
 class ProjectInfo(DataModel):
-    name = fields.CharField(50, description="项目名称")
-    description = fields.TextField(description="项目描述")
+    name = fields.CharField(50, unique=True, description="项目名称")
+    description = fields.TextField(default='', null=True, description="项目描述")
     masters = fields.ManyToManyField("system.Users", through='t_project_masters', related_name="project_masters",
                                      description="管理员")
     members = fields.ManyToManyField("system.Users", through='t_project_members', related_name="project_members",
@@ -29,8 +29,8 @@ class ProjectInfo(DataModel):
 
 class Envs(DataModel):
     name = fields.CharField(50, description="环境名称")
-    description = fields.TextField(description="环境描述")
-    domain = fields.CharField(150, description="环境域名")
+    description = fields.TextField(default='', null=True,description="环境描述")
+    domain = fields.CharField(150, unique=True, description="环境域名")
     project = fields.ForeignKeyField("project_info.ProjectInfo", null=True, description="所属项目")
 
     class Meta:

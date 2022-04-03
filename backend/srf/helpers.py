@@ -8,9 +8,11 @@
     helpers.py
 
 """
-
+import importlib
 from collections import OrderedDict
 from collections.abc import MutableMapping
+
+from srf.exceptions import ConfigError
 
 
 class BindingDict(MutableMapping):
@@ -43,8 +45,15 @@ class BindingDict(MutableMapping):
     def __repr__(self):
         return dict.__repr__(self.fields)
 
-# def set_value(instance, key, value):
-#     if isinstance(value, Mapping):
-#         for k, v in value.items():
-#             set_value(instance, k, v)
-#     setattr(instance, key, value)
+
+def get_user_models(path=None):
+    if not path:
+        path = 'apps.system.models.Users'
+    if path.find('.') != -1:
+        model_name = path[path.rfind('.') + 1:]
+        model_path = path[:path.rfind('.')]
+        user_model = importlib.import_module(model_path)
+        user_class = getattr(user_model, model_name)
+        if user_class:
+            return user_class
+    raise ConfigError('USER_MODEL配置错误')
