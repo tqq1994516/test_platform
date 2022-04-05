@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { store } from '/@/store';
 import { RoleEnum } from '/@/enums/roleEnum';
 import { PageEnum } from '/@/enums/pageEnum';
-import { ROLES_KEY, TOKEN_KEY, USER_INFO_KEY } from '/@/enums/cacheEnum';
+import { GROUPS_KEY, ROLES_KEY, TOKEN_KEY, USER_INFO_KEY } from '/@/enums/cacheEnum';
 import { getAuthCache, setAuthCache } from '/@/utils/auth';
 import { GetUserInfoModel, LoginParams } from '/@/api/sys/model/userModel';
 import { doLogout, getUserInfo, loginApi } from '/@/api/sys/user';
@@ -20,7 +20,7 @@ import { h } from 'vue';
 interface UserState {
   userInfo: Nullable<UserInfo>;
   token?: string;
-  roleList: RoleEnum[];
+  groupList: string[];
   sessionTimeout?: boolean;
   lastUpdateTime: number;
 }
@@ -32,8 +32,8 @@ export const useUserStore = defineStore({
     userInfo: null,
     // token
     token: undefined,
-    // roleList
-    roleList: [],
+    // groupList
+    groupList: [],
     // Whether the login expired
     sessionTimeout: false,
     // Last fetch time
@@ -46,8 +46,8 @@ export const useUserStore = defineStore({
     getToken(): string {
       return this.token || getAuthCache<string>(TOKEN_KEY);
     },
-    getRoleList(): RoleEnum[] {
-      return this.roleList.length > 0 ? this.roleList : getAuthCache<RoleEnum[]>(ROLES_KEY);
+    getGroupList(): string[] {
+      return this.groupList.length > 0 ? this.groupList : getAuthCache<string[]>(GROUPS_KEY);
     },
     getSessionTimeout(): boolean {
       return !!this.sessionTimeout;
@@ -61,9 +61,9 @@ export const useUserStore = defineStore({
       this.token = info ? info : ''; // for null or undefined value
       setAuthCache(TOKEN_KEY, info);
     },
-    setRoleList(roleList: RoleEnum[]) {
-      this.roleList = roleList;
-      setAuthCache(ROLES_KEY, roleList);
+    setGroupList(groupList: string[]) {
+      this.groupList = groupList;
+      setAuthCache(GROUPS_KEY, groupList);
     },
     setUserInfo(info: UserInfo | null) {
       this.userInfo = info;
@@ -76,7 +76,7 @@ export const useUserStore = defineStore({
     resetState() {
       this.userInfo = null;
       this.token = '';
-      this.roleList = [];
+      this.groupList = [];
       this.sessionTimeout = false;
     },
     /**
@@ -91,10 +91,10 @@ export const useUserStore = defineStore({
       try {
         const { goHome = true, mode, ...loginParams } = params;
         const data = await loginApi(loginParams, mode);
-        const { token } = data;
+        const { access_token } = data;
 
         // save token
-        this.setToken(token);
+        this.setToken(access_token);
         return this.afterLoginAction(goHome);
       } catch (error) {
         return Promise.reject(error);
@@ -125,13 +125,13 @@ export const useUserStore = defineStore({
     async getUserInfoAction(): Promise<UserInfo | null> {
       if (!this.getToken) return null;
       const userInfo = await getUserInfo();
-      const { roles = [] } = userInfo;
-      if (isArray(roles)) {
-        const roleList = roles.map((item) => item.value) as RoleEnum[];
-        this.setRoleList(roleList);
+      const { groups = [] } = userInfo;
+      if (isArray(groups)) {
+        const groupList = groups.map((item) => item.name);
+        this.setGroupList(groupList);
       } else {
-        userInfo.roles = [];
-        this.setRoleList([]);
+        userInfo.groups = [];
+        this.setGroupList([]);
       }
       this.setUserInfo(userInfo);
       return userInfo;

@@ -54,11 +54,22 @@ def create_app():
         else:
             return None
 
+    async def payload_extender(payload, *args, **kwargs):
+        user_id = payload.get('user_id', None)
+        model_class = get_user_models()
+        user = await model_class.get(id=user_id).first()
+        payload.update({
+            'groups': await user.groups.all().values_list('id', 'name')
+        })
+
+        return payload
+
     Initialize(sanic_app,
                authenticate=authenticate,
                store_refresh_token=store_refresh_token,
                retrieve_refresh_token=retrieve_refresh_token,
                retrieve_user=retrieve_user,
+               extend_payload=payload_extender,
                class_views=logout_register)
     register_tortoise(sanic_app,
                       db_url=sanic_app.config.get('DB_CONNECT_STR'),
@@ -80,6 +91,7 @@ TORTOISE_ORM = {
         },
     },
 }
+
 for name, val in app.ctx.apps.models.items():
     TORTOISE_ORM['apps'][name] = {
         "models": val,

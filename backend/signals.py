@@ -3,7 +3,7 @@ import importlib
 from tortoise.expressions import Q
 
 from apps import app
-from apps.system.models import Permissions, Models, Users
+from apps.system.models import Permissions, Models, Users, Roles, Groups
 from srf.encryption_algorithm import genearteMD5
 
 
@@ -43,8 +43,8 @@ async def create_superadmin(app, loop):
 async def load_model(app, loop):
     """在服务器启动时加载model"""
     apps = app.ctx.apps.apps.keys()
-    superadmin = await Users.filter(username="superadmin").first()
     for name in apps:
+        superadmin = await Users.filter(username="superadmin").first()
         if not await Models.exists(name=name):
             model = {
                 "name": name,
@@ -58,8 +58,8 @@ async def load_model(app, loop):
 async def load_permission(app, loop):
     """在服务器启动时加载权限"""
     all_perm_dict = collection_permissions()
-    superadmin = await Users.filter(username="superadmin").first()
     for app_name, perms in all_perm_dict.items():
+        superadmin = await Users.filter(username="superadmin").first()
         pk = await Models.filter(name=app_name).first()
         for p in perms:
             if not await Permissions.exists(Q(models=pk.id) & Q(name=p)):
@@ -71,3 +71,41 @@ async def load_permission(app, loop):
                     "owner": superadmin
                 }
                 perm = await Permissions.create(**permission)
+
+
+@app.before_server_start
+async def load_role(app, loop):
+    """在服务器启动时加载角色"""
+    if not await Roles.exists(name='superadmin'):
+        superadmin = await Users.filter(username="superadmin").first()
+        permissions = await Permissions.all()
+        role = {
+            "name": "superadmin",
+            "description": "超级管理员",
+            "owner": superadmin
+        }
+        roles = await Roles.create(**role)
+        await roles.permissions.add(*permissions)
+
+
+@app.before_server_start
+async def load_group(app, loop):
+    """在服务器启动时加载用户组"""
+    if not await Groups.exists(name='superadminGroup'):
+        superadmin = await Users.filter(username="superadmin").first()
+        superrole = await Roles.filter(name='superadmin')
+        group = {
+            "name": "superadminGroup",
+            "description": "超级管理员组",
+            "owner": superadmin
+        }
+        groups = await Groups.create(**group)
+        await groups.roles.add(*superrole)
+
+
+@app.before_server_start
+async def update_superadmin_info(app, loop):
+    """在服务器启动时加载用户组"""
+    superadmin = await Users.filter(username="superadmin").first()
+    supergroup = await Groups.filter(name="superadminGroup")
+    await superadmin.groups.add(*supergroup)

@@ -13,6 +13,8 @@ declare module 'vue-router' {
     ignoreAuth?: boolean;
     // role info
     roles?: RoleEnum[];
+    // group info
+    groups?: string[];
     // Whether not to cache
     ignoreKeepAlive?: boolean;
     // Is it fixed on tab

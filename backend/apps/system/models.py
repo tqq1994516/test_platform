@@ -35,7 +35,7 @@ class Users(DataModel):
     apps = fields.ManyToManyField("system.Apps", through="t_users_apps", related_name="users_apps", description="开通应用")
     models = fields.ManyToManyField("system.Models", through="t_users_models", related_name="users_models",
                                     description="开通模块")
-    groups = fields.ManyToManyField("system.Groups", through="t_users_groups", related_name="users_apps",
+    groups = fields.ManyToManyField("system.Groups", through="t_users_groups", related_name="users_groups",
                                     description="用户组")
     is_super_master = fields.BooleanField(default=False, description="是否超管")
     is_system_master = fields.BooleanField(default=False, description="是否管理员")
@@ -47,8 +47,8 @@ class Users(DataModel):
     def __str__(self):
         return self.username
 
-    def to_dict(self):
-        return {"user_id": self.id, "username": self.username}
+    async def to_dict(self):
+        return {"user_id": self.id, "username": self.username, "groups": await self.groups.all().values('id', 'name')}
 
 
 class Apps(DataModel):
@@ -91,7 +91,7 @@ class Groups(DataModel):
 class Roles(DataModel):
     name = fields.CharField(50, unique=True, description="角色名称")
     description = fields.CharField(150, default='', null=True, description="角色描述")
-    permission = fields.ManyToManyField("system.Permissions", description="权限")
+    permissions = fields.ManyToManyField("system.Permissions", description="权限")
 
     class Meta:
         table = "t_roles"

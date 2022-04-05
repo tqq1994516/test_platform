@@ -27,7 +27,7 @@
   "scripts": {
     "commit": "git add . && git cz",
     "push": "npm run changelog && git push origin master",
-    "changelog": "conventional-changelog -p gitmoji-config -i CHANGELOG.md -s && git rebase HEAD^ && git add CHANGELOG.md && git commit --amend",
+    "changelog": "conventional-changelog -p gitmoji-config -i CHANGELOG.md -s -r 0&& git add CHANGELOG.md && git commit --amend",
     "release": "standard-version --preset gitmoji-config",
     "lint:eslint": "eslint --cache --max-warnings 0  \"frontend/{src,mock}/**/*.{vue,ts,tsx}\" --fix",
     "lint:prettier": "prettier --write  \"frontend/src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",

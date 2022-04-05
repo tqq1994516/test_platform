@@ -102,14 +102,14 @@ export const usePermissionStore = defineStore({
       const appStore = useAppStoreWithOut();
 
       let routes: AppRouteRecordRaw[] = [];
-      const roleList = toRaw(userStore.getRoleList) || [];
+      const groupList = toRaw(userStore.getGroupList) || [];
       const { permissionMode = projectSetting.permissionMode } = appStore.getProjectConfig;
 
       const routeFilter = (route: AppRouteRecordRaw) => {
         const { meta } = route;
-        const { roles } = meta || {};
-        if (!roles) return true;
-        return roleList.some((role) => roles.includes(role));
+        const { groups } = meta || {};
+        if (!groups) return true;
+        return groupList.some((group) => groups.includes(group));
       };
 
       const routeRemoveIgnoreFilter = (route: AppRouteRecordRaw) => {
