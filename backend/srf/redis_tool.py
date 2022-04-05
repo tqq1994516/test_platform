@@ -22,7 +22,7 @@ def ttl(sec):
 
 @ttl(REDIS_TTL)
 async def set_json_value(redis, key, value):
-    if redis.exists(key):
+    if await redis.exists(key) == 1:
         await del_json_key(redis, key)
     await redis.json().set(key, value)
 
@@ -37,8 +37,8 @@ async def del_json_key(redis, key):
 
 @ttl(REDIS_TTL)
 async def set_value(redis, key, value):
-    if redis.exists(key):
-        await del_json_key(redis, key)
+    if await redis.exists(key) == 1:
+        await del_key(redis, key)
     await redis.set(key, value)
 
 

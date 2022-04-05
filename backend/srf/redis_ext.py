@@ -39,7 +39,7 @@ class RedisExtension(BaseExtension):
             self.get_from_app_config(app, 'REDIS_PORT'),
         )
         config = {
-            "url": f"redis://{connection_uri[0]}@{connection_uri[1]}:{connection_uri[2]}",
+            "url": f"redis://:{connection_uri[1]}@{connection_uri[0]}:{connection_uri[2]}",
             "db": self.get_from_app_config(app, 'REDIS_DATABASE', None),
             "ssl": self.get_from_app_config(app, 'REDIS_SSL', None),
             "encoding": self.get_from_app_config(app, 'REDIS_ENCODING', None),

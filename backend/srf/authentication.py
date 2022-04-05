@@ -18,7 +18,7 @@ from settings import CACHE_REFRESH_PREFIX
 from srf import ModelSerializer
 from srf.encryption_algorithm import genearteMD5
 from srf.helpers import get_user_models
-from srf.redis_tool import del_json_key
+from srf.redis_tool import del_key
 from srf.request import SRFRequest
 from srf.status import HttpStatus
 
@@ -52,17 +52,17 @@ async def authenticate(request: SRFRequest, *args, **kwargs):
 class Logout(BaseEndpoint):
     async def get(self, request, *args, **kwargs):
         jwt = request.app.ctx.auth
-        user_id = jwt.extract_user_id(request)
+        user_id = await jwt.extract_user_id(request)
         model_class = get_user_models()
         u = await model_class.filter(id=user_id).first()
         if u:
             u.is_online = False
             await model_class.save(u)
-            with request.app.ctx.redis as redis:
-                await del_json_key(redis, f'{CACHE_REFRESH_PREFIX}{user_id}')
-            return json(body={"msg": _("Logout success!")}, status=HttpStatus.HTTP_200_OK, dumps=dumps)
+            async with request.app.ctx.redis as redis:
+                await del_key(redis, f'{CACHE_REFRESH_PREFIX}{user_id}')
+            return json(body={'msg': "Logout success!"}, status=HttpStatus.HTTP_200_OK, dumps=dumps)
         else:
-            return json(body={"msg": _("Token error!")}, status=HttpStatus.HTTP_400_BAD_REQUEST, dumps=dumps)
+            return json(body={'msg': "Token error!"}, status=HttpStatus.HTTP_400_BAD_REQUEST, dumps=dumps)
 
 
 class Register(BaseEndpoint):
@@ -71,12 +71,12 @@ class Register(BaseEndpoint):
         await serializer.is_valid(raise_exception=True)
         try:
             await serializer.save()
-            return json(body={"msg": _("Register success!")},
+            return json(body={"msg": "Register success!"},
                         data=await serializer.data,
-                        http_status=HttpStatus.HTTP_201_CREATED)
+                        http_status=HttpStatus.HTTP_201_CREATED, dumps=dumps)
         except:
-            return json(body={"msg": _("Register fail!")},
-                        status=HttpStatus.HTTP_401_UNAUTHORIZED)
+            return json(body={"msg": "Register fail!"},
+                        status=HttpStatus.HTTP_401_UNAUTHORIZED, dumps=dumps)
 
 
 logout_register = (('/logout', Logout), ('/register', Register))

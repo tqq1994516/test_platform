@@ -14,6 +14,7 @@ from sanic_babel import Babel
 from sanic_jwt import Initialize
 from tortoise.contrib.sanic import register_tortoise
 
+from srf.helpers import get_user_models
 from srf.redis_tool import set_value, get_value
 from srf.app_helper import AppsHelper
 from srf.request import SRFRequest
@@ -44,10 +45,20 @@ def create_app():
         key = f'{CACHE_REFRESH_PREFIX}{user_id}'
         return await get_value(sanic_app.ctx.redis, key)
 
+    async def retrieve_user(request, payload, *args, **kwargs):
+        if payload:
+            user_id = payload.get('user_id', None)
+            model_class = get_user_models()
+            user = await model_class.get(id=user_id)
+            return user
+        else:
+            return None
+
     Initialize(sanic_app,
                authenticate=authenticate,
                store_refresh_token=store_refresh_token,
                retrieve_refresh_token=retrieve_refresh_token,
+               retrieve_user=retrieve_user,
                class_views=logout_register)
     register_tortoise(sanic_app,
                       db_url=sanic_app.config.get('DB_CONNECT_STR'),
