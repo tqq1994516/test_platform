@@ -6,7 +6,6 @@
 # @Project : test_platform
 # @Description : view file
 from srf import ModelViewSet
-
 from apps.project_info.models import ProjectInfo, Envs, Versions
 from apps.project_info.serializers import ProjectInfoSerializer, EnvsSerializer, VersionsSerializer
 

@@ -127,18 +127,11 @@ class AppsHelper:
                 'path': Path(import_module(module_path).__file__).parent
             }
             models_exists, models = get_module_models(module_path)
-            urls_exists, urls = get_module_urls(module_path)
             if models_exists:
                 self.models[module_name] = [models]
                 logger.info('\t\tModels finish.')
             else:
                 logger.warn('\t\tNot find models.')
-            if urls_exists:
-                self.routers.extend(urls)
-                load_route(instance, blueprint, urls)
-                logger.info('\t\tRegistered route finish.')
-            else:
-                logger.warn('\t\tNot find urls.')
             instance.blueprint(blueprint)
             logger.info('\t\tRegistered Blueprint finish.')
         logger.info('The {} applications are loaded.'.format(len(app_modules)))

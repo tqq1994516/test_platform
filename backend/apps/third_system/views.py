@@ -6,7 +6,6 @@
 # @Project : test_platform
 # @Description : view file
 from srf import ModelViewSet
-
 from apps.third_system.models import Tasks, Bugs
 from apps.third_system.serializers import TasksSerializer, BugsSerializer
 

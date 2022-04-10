@@ -26,18 +26,14 @@ class ListModelMixin:
     适用于输出列表类型数据
     """
     pagination_class = ORMPagination
-    detail = False
-
-    async def get(self, request, *args, **kwargs):
-        return await self.list(request, *args, **kwargs)
 
     async def list(self, request, *args, **kwargs):
-        queryset = await self.get_queryset()
+        queryset = await self.get_queryset(request, *args, **kwargs)
 
-        page = await self.paginate_queryset(queryset)
+        page = await self.paginate_queryset(queryset, request, *args, **kwargs)
         if page is not None:
-            self.paginator.set_count(await self.get_paginator_count(queryset))
-            serializer = self.get_serializer(page, many=True)
+            self._paginator.set_count(await self.get_paginator_count(queryset))
+            serializer = self.get_serializer(request, page, many=True, *args, **kwargs)
             data = self.get_paginated_response(await serializer.data)
             return self.success_json_response(msg="查询成功！", data=data)
 
@@ -52,7 +48,6 @@ class CreateModelMixin:
     """
 
     async def post(self, request, *args, **kwargs):
-        """1111"""
         return await self.create(request, *args, **kwargs)
 
     async def create(self, request, *args, **kwargs):
@@ -69,10 +64,13 @@ class RetrieveModelMixin:
     """
     适用于查询指定PK的内容
     """
-    detail = True
 
     async def get(self, request, *args, **kwargs):
-        return await self.retrieve(request, *args, **kwargs)
+        if '' != kwargs[self.lookup_field]:
+            return await self.retrieve(request, *args, **kwargs)
+        else:
+            kwargs.pop(self.lookup_field)
+            return await self.list(request, *args, **kwargs)
 
     async def retrieve(self, request, *args, **kwargs):
         instance = await self.get_object()

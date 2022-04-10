@@ -1,5 +1,5 @@
 import { defHttp } from '/@/utils/http/axios';
-import { LoginParams, LoginResultModel, GetUserInfoModel } from './model/userModel';
+import { LoginParams, LoginResultModel, GetUserInfoModel, MeInfo } from './model/userModel';
 
 import { ErrorMessageMode } from '/#/axios';
 
@@ -53,15 +53,15 @@ export function getPermCode() {
  * @description: getUserInfo
  */
 export function getUserInfo() {
-  return defHttp.get<GetUserInfoModel>({ url: Api.Me }, { errorMessageMode: 'none', joinPrefix: false, });
+  return defHttp.get<MeInfo>({ url: Api.Me }, { errorMessageMode: 'none', joinPrefix: false, isTransformResponse: false, });
 }
 
 export function getVerify() {
-  return defHttp.get<GetUserInfoModel>({ url: Api.Verify }, { errorMessageMode: 'none', joinPrefix: false, });
+  return defHttp.get<GetUserInfoModel>({ url: Api.Verify }, { errorMessageMode: 'none', joinPrefix: false, isTransformResponse: false, });
 }
 
 export function doLogout() {
-  return defHttp.get({ url: Api.Logout, }, { joinPrefix: false, });
+  return defHttp.get({ url: Api.Logout, }, { joinPrefix: false, isTransformResponse: false, });
 }
 
 // export function testRetry() {

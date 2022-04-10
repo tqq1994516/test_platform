@@ -11,6 +11,7 @@ from pathlib import Path
 
 from sanic import Sanic
 from sanic_babel import Babel
+from sanic_ext.utils.route import get_blueprinted_routes
 from sanic_jwt import Initialize
 from tortoise.contrib.sanic import register_tortoise
 

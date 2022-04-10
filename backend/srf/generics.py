@@ -1,4 +1,3 @@
-
 from srf.views import APIView
 from srf.filters import ORMAndFilter
 from srf.exceptions import APIException
@@ -40,8 +39,8 @@ class GenericAPIView(APIView):
         lookup_field = self.lookup_field
 
         assert lookup_field in self.kwargs, (
-            '%s 不存在于 %s 的 Url配置中的关键词内 ' %
-            (lookup_field, self.__class__.__name__,)
+                '%s 不存在于 %s 的 Url配置中的关键词内 ' %
+                (lookup_field, self.__class__.__name__,)
         )
 
         filter_kwargs = {lookup_field: self.kwargs[lookup_field]}
@@ -55,28 +54,31 @@ class GenericAPIView(APIView):
 
         return obj
 
-    async def get_queryset(self):
+    async def get_queryset(self, request=None, *args, **kwargs):
         assert self.queryset is not None, (
-            "'%s'应该包含一个'queryset'属性，"
-            "或重写`get_queryset()`方法。"
-            % self.__class__.__name__
+                "'%s'应该包含一个'queryset'属性，"
+                "或重写`get_queryset()`方法。"
+                % self.__class__.__name__
         )
         queryset = self.queryset
-        filter_orm = await self.filter_orm()
+        if request:
+            filter_orm = await self.filter_orm(request, *args, **kwargs)
+        else:
+            filter_orm = await self.filter_orm()
         queryset = queryset.filter(filter_orm)
         return queryset
 
-    async def filter_orm(self):
+    async def filter_orm(self, request=None, *args, **kwargs):
         """得到ORM过滤参数"""
-        return self.filter_class(self.request, self).orm_filter
+        return self.filter_class(request, self).orm_filter
 
-    def get_serializer(self, *args, **kwargs):
+    def get_serializer(self, request=None, *args, **kwargs):
         """
         返回应该用于验证和验证的序列化程序实例
         对输入进行反序列化，并对输出进行序列化。
         """
         serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
+        kwargs.setdefault('context', self.get_serializer_context(request))
         return serializer_class(*args, **kwargs)
 
     def get_serializer_class(self):
@@ -90,23 +92,22 @@ class GenericAPIView(APIView):
         （例如，管理员获得完整的序列化，其他获得基本的序列化）
         """
         assert self.serializer_class is not None, (
-            "'%s' should either include a `serializer_class` attribute, "
-            "or override the `get_serializer_class()` method."
-            % self.__class__.__name__
+                "'%s' should either include a `serializer_class` attribute, "
+                "or override the `get_serializer_class()` method."
+                % self.__class__.__name__
         )
         return self.serializer_class
 
-    def get_serializer_context(self):
+    def get_serializer_context(self, request=None):
         """
         提供给序列化程序类的额外上下文。
         """
         return {
-            'request': self.request,
+            'request': request,
             'view': self
         }
 
-    @property
-    def paginator(self):
+    def paginator(self, request=None, *args, **kwargs):
         """
         与视图关联的分页器实例，或“None”。
         """
@@ -114,7 +115,7 @@ class GenericAPIView(APIView):
             if self.pagination_class is None:
                 self._paginator = None
             else:
-                self._paginator = self.pagination_class(self.request, self)
+                self._paginator = self.pagination_class(request, self)
         return self._paginator
 
     async def get_paginator_count(self, queryset):
@@ -125,25 +126,26 @@ class GenericAPIView(APIView):
         """
         return await queryset.count()
 
-    async def paginate_queryset(self, queryset):
+    async def paginate_queryset(self, queryset, request=None, *args, **kwargs):
         """
         返回单页结果，如果禁用了分页，则返回“无”。
         """
-        if self.paginator is None:
+        self.paginator(request, *args, **kwargs)
+        if self._paginator is None:
             return None
-        offset = (self.paginator.query_page - 1) * self.paginator.query_page_size
-        return queryset.limit(self.paginator.query_page_size).offset(offset)
+        offset = (self._paginator.query_page - 1) * self._paginator.query_page_size
+        return queryset.limit(self._paginator.query_page_size).offset(offset)
 
     def get_paginated_response(self, data):
         """
         返回给定输出数据的分页样式`Response`对象。
         """
         return {
-            'count': self.paginator.count,
-            'next': self.paginator.next_link,
-            'next_page_num': self.paginator.next_page,
-            'previous': self.paginator.previous_link,
-            'previous_num': self.paginator.previous_page,
+            'count': self._paginator.count,
+            'next': self._paginator.next_link,
+            'next_page_num': self._paginator.next_page,
+            'previous': self._paginator.previous_link,
+            'previous_num': self._paginator.previous_page,
             'results': data
         }
 

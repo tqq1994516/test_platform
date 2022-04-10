@@ -125,16 +125,16 @@ export const useUserStore = defineStore({
     async getUserInfoAction(): Promise<UserInfo | null> {
       if (!this.getToken) return null;
       const userInfo = await getUserInfo();
-      const { groups = [] } = userInfo;
+      const { groups = [] } = userInfo.me;
       if (isArray(groups)) {
         const groupList = groups.map((item) => item.name);
         this.setGroupList(groupList);
       } else {
-        userInfo.groups = [];
+        userInfo.me.groups = [];
         this.setGroupList([]);
       }
-      this.setUserInfo(userInfo);
-      return userInfo;
+      this.setUserInfo(userInfo.me);
+      return userInfo.me;
     },
     /**
      * @description: logout

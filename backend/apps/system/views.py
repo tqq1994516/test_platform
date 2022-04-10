@@ -6,7 +6,6 @@
 # @Project : test_platform
 # @Description : view file
 from srf import ModelViewSet
-
 from apps.system.models import Users, Apps, Groups, Roles, Permissions, Tags
 from apps.system.serializers import UsersSerializer, AppsSerializer, GroupsSerializer, RolesSerializer, \
     PermissionsSerializer, TagsSerializer

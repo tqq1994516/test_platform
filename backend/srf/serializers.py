@@ -625,7 +625,6 @@ class ModelSerializer(Serializer):
     def check_relationship(self):
         """检查关系字段 目前不能为关系字段提供自动转换功能"""
 
-    #
     def _get_model_basis_fields(self, model_fields):
         """
         得到基础字段，非关系字段

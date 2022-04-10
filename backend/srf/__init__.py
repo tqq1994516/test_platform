@@ -8,7 +8,7 @@
     __init__.py
     文件说明
 """
-from srf.views import *
+from srf.views import APIView
 from srf.viewsets import *
 from srf.generics import *
 from srf.serializers import *

@@ -35,3 +35,7 @@ export interface GetUserInfoModel {
   // 介绍
   desc?: string;
 }
+
+export interface MeInfo {
+  me: GetUserInfoModel;
+}

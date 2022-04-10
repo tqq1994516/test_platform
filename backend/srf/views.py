@@ -15,66 +15,16 @@
 
 
 """
-from datetime import datetime
-
-from sanic.log import logger
 from sanic.response import json, HTTPResponse
 from sanic_jwt import protected, Authentication
-
 from ujson import dumps
-from tortoise.exceptions import IntegrityError
-from tortoise.transactions import in_transaction
 from sanic.views import HTTPMethodView
+
 from srf.exceptions import APIException, ValidationException
 from srf.permissions import BasePermission, ViewMapPermission
 from srf.status import RuleStatus, HttpStatus
 
-__all__ = ('BaseView', 'APIView')
-
-from srf.utils import run_awaitable
-
-
-class BaseView:
-    """只实现路由分发的基础视图
-    在使用时应当开放全部路由 ALL_METHOD
-    app.add_route('/test', BaseView.as_view(), 'test', ALL_METHOD)
-    如需限制路由则在其他地方注明
-    app.add_route('/test', BaseView.as_view(), 'test', ALL_METHOD)
-    注意以上方法的报错是不可控的
-    """
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    @classmethod
-    def as_view(cls, *class_args, **class_kwargs):
-        # 返回的响应方法闭包
-        async def view(request, *args, **kwargs):
-            self = view.base_class(*class_args, **class_kwargs)
-
-            self.request = request
-            self.args = args
-            self.kwargs = kwargs
-            self.app = request.app
-            return await self.dispatch(request, *args, **kwargs)
-
-        view.base_class = cls
-        view.API_DOC_CONFIG = class_kwargs.get('API_DOC_CONFIG')  # 未来的API文档配置属性+
-        view.__doc__ = cls.__doc__
-        view.__module__ = cls.__module__
-        view.__name__ = cls.__name__
-        return view
-
-    async def dispatch(self, request, *args, **kwargs):
-        """分发路由"""
-        request.user = None
-        method = request.method.lower()
-
-        if not hasattr(self, method):
-            return HTTPResponse('405请求方法错误', status=405)
-        handler = getattr(self, method, None)
-        return await run_awaitable(handler, request, *args, **kwargs)
+__all__ = 'APIView'
 
 
 class APIView(HTTPMethodView):
@@ -83,37 +33,6 @@ class APIView(HTTPMethodView):
     permission_classes = ()
     decorators = [protected()]
     is_transaction = True
-
-    async def dispatch(self, request, *args, **kwargs):
-        """分发路由"""
-        request.user = None
-        method = request.method.lower()
-
-        if not hasattr(self, method):
-            return self.json_response(msg='发生错误：未找到%s方法' % method, status=RuleStatus.STATUS_0_FAIL,
-                                      http_status=HttpStatus.HTTP_405_METHOD_NOT_ALLOWED)
-        handler = getattr(self, method, None)
-        try:
-            await self.initial(request, *args, **kwargs)
-            if self.is_transaction:
-                async with in_transaction():
-                    response = await run_awaitable(handler, request=request, *args, **kwargs)
-            else:
-                response = await run_awaitable(handler, request=request, *args, **kwargs)
-        except APIException as exc:
-            response = self.handle_exception(exc)
-        except ValidationException as exc:
-            response = self.error_json_response(exc.error_detail, '数据验证失败')
-        except AssertionError as exc:
-            raise exc
-        except IntegrityError as exc:
-            response = self.error_json_response(msg=str(exc), status=RuleStatus.STATUS_0_FAIL)
-        except Exception as exc:
-            logger.error('--捕获未知错误--', exc)
-            msg = '发生致命的未知错误，请在服务器查看时间为{}的日志'.format(datetime.now().strftime('%F %T'))
-            response = self.json_response(msg=msg, status=RuleStatus.STATUS_0_FAIL,
-                                          http_status=HttpStatus.HTTP_500_INTERNAL_SERVER_ERROR)
-        return response
 
     def handle_exception(self, exc: APIException):
         return self.json_response(**exc.response_data())

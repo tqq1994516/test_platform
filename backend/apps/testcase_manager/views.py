@@ -6,7 +6,6 @@
 # @Project : test_platform
 # @Description : view file
 from srf import ModelViewSet
-
 from apps.testcase_manager.models import TestcaseSites, Testcases, TestcaseDetail, TestcaseOperationSteps, \
     TestcaseDependence, TestcaseFiles, TestcaseComments, TestcaseChangeLogs
 from apps.testcase_manager.serializers import TestcaseSitesSerializer, TestcasesSerializer, TestcaseDetailSerializer, \
