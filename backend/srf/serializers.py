@@ -474,7 +474,6 @@ class ModelSerializer(Serializer):
             exclude = ()  # 冲突，不能与fields共存
             read_only_fields = ()  # 字段与write_only_fields冲突
             write_only_fields = ()  # 字段与read_only_fields冲突
-
     """
 
     @property
@@ -503,17 +502,81 @@ class ModelSerializer(Serializer):
             assert depth >= 0, "'depth' may not be negative."
             assert depth <= 10, "'depth' may not be greater than 10."
 
-        converter = ModelConverter(ModelSerializer)
         model_original_fields = model._meta.fields_map
         model_clean_fields = self._clean_model_field(model_original_fields)
-        effective_field = self.get_effective_field(model_clean_fields)
-        serializer_fields = BindingDict(self)
+        self.m2m_fields = self.field_converter(self._get_model_m2m_fields(model_original_fields))
+        self.o2o_fields = self.field_converter(self._get_model_o2o_fields(model_original_fields))
+        self.o2m_fields = self.field_converter(self._get_model_o2m_fields(model_original_fields))
+        self.m2o_fields = self.field_converter(self._get_model_m2o_fields(model_original_fields))
+        effective_field = self.field_converter(self.get_effective_field(model_clean_fields))
+        effective_field.update(self.m2m_fields)
+        effective_field.update(declared_fields)
+        return effective_field
 
-        for field_name, field_class in effective_field.items():
+    def field_converter(self, fields):
+        """
+        字段转换
+        """
+        converter = ModelConverter(ModelSerializer)
+        serializer_fields = BindingDict(self)
+        for field_name, field_class in fields.items():
             current_field_class = converter.convert(self, field_class, **self.get_field_kws_by_meta(field_name))
             serializer_fields[field_name] = current_field_class
-        serializer_fields.update(declared_fields)
         return serializer_fields
+
+    # 序列化
+    async def internal_to_external(self, data: Any) -> Any:
+        """
+        内转外
+        :param data:
+        :return:
+
+        """
+        res = OrderedDict()
+        fields = self._readable_fields
+        for field in fields:
+            method = getattr(self, 'output_{}'.format(field.field_name), None)
+            try:
+                value = await field.get_internal_value(data)
+            except SkipField:
+                continue
+            if value is not None:
+                value = await field.internal_to_external(value)
+            if method:
+                value = await run_awaitable(method, value, data)
+            res[field.field_name] = value
+        return res
+
+    #  反序列化
+    async def external_to_internal(self, data: Any) -> Any:
+        """
+        外转内
+        :param data:
+        :return:
+        """
+        res = OrderedDict()
+        errors = OrderedDict()
+        fields = self._writable_fields
+        for field in fields:
+            print(field.field_name, data)
+            if field.field_name not in data or not isinstance(data, dict):
+                continue
+            else:
+                validate_method = getattr(self, 'validate_' + field.field_name, None)
+                try:
+                    primitive_value = field.get_external_value(data)
+                    validated_value = await field.run_validation(primitive_value)
+                    if validate_method is not None:
+                        validated_value = await run_awaitable(validate_method, validated_value, data)
+                except ValidationException as exc:
+                    errors[field.field_name] = exc.error_detail
+                except SkipField:
+                    pass
+                else:
+                    set_value(res, field.source_attrs, validated_value)
+            if errors:
+                raise ValidationException(errors)
+        return res
 
     def get_effective_field(self, model_fields) -> dict:
         """
@@ -582,7 +645,7 @@ class ModelSerializer(Serializer):
 
         ModelClass = self.Meta.model
         ModelClassMeta = ModelClass._meta
-        many_to_many = {}
+        many_to_many = self.m2m_fields
 
         for m2m_field in ModelClassMeta.m2m_fields:
             if m2m_field in self.fields:
@@ -590,6 +653,7 @@ class ModelSerializer(Serializer):
                     many_to_many[m2m_field] = validated_data.pop(m2m_field)
         try:
             instance = ModelClass()
+            print(validated_data.items())
             for attr, value in validated_data.items():
                 if attr not in many_to_many:
                     setattr(instance, attr, value)
@@ -633,34 +697,37 @@ class ModelSerializer(Serializer):
         """
         return {field_name: field_class for field_name, field_class in model_fields.items() if
                 not isinstance(field_class, tortoise_fields.relational.RelationalField)}
-    #
-    # def _get_model_M2M_fields(self, model_fields):
-    #     """
-    #     得到多对多字段
-    #     :param model:
-    #     :return:
-    #     """
-    #     return {field_name: field_class for field_name, field_class in model_fields.items() if isinstance(field_class, tortoise_fields.relational.ManyToManyFieldInstance)}
-    #
-    # def _get_model_O2O_fields(self, model_fields):
-    #     """得到一对一字段"""
-    #     return {field_name: field_class for field_name, field_class in model_fields.items() if
-    #             isinstance(field_class, (tortoise_fields.relational.BackwardOneToOneRelation, tortoise_fields.relational.OneToOneFieldInstance))}
-    #
-    # def _get_model_M2O_fields(self, model_fields):
-    #     """
-    #     得到多对一字段
-    #     :param model:
-    #     :return:
-    #     """
-    #     return {field_name: field_class for field_name, field_class in model_fields.items() if
-    #             isinstance(field_class, tortoise_fields.relational.ForeignKeyFieldInstance)}
-    #
-    # def _get_model_O2M_fields(self, model_fields):
-    #     """
-    #     得到一对多字段
-    #     :param model:
-    #     :return:
-    #     """
-    #     return {field_name: field_class for field_name, field_class in model_fields.items() if
-    #             isinstance(field_class, tortoise_fields.relational.BackwardFKRelation)}
+
+    def _get_model_m2m_fields(self, model_fields):
+        """
+        得到多对多字段
+        :param model:
+        :return:
+        """
+        return {field_name: field_class for field_name, field_class in model_fields.items() if
+                isinstance(field_class, tortoise_fields.relational.ManyToManyFieldInstance)}
+
+    def _get_model_o2o_fields(self, model_fields):
+        """得到一对一字段"""
+        return {field_name: field_class for field_name, field_class in model_fields.items() if
+                isinstance(field_class, (
+                    tortoise_fields.relational.BackwardOneToOneRelation,
+                    tortoise_fields.relational.OneToOneFieldInstance))}
+
+    def _get_model_m2o_fields(self, model_fields):
+        """
+        得到多对一字段
+        :param model:
+        :return:
+        """
+        return {field_name: field_class for field_name, field_class in model_fields.items() if
+                isinstance(field_class, tortoise_fields.relational.ForeignKeyFieldInstance)}
+
+    def _get_model_o2m_fields(self, model_fields):
+        """
+        得到一对多字段
+        :param model:
+        :return:
+        """
+        return {field_name: field_class for field_name, field_class in model_fields.items() if
+                isinstance(field_class, tortoise_fields.relational.BackwardFKRelation)}

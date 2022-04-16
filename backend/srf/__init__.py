@@ -11,5 +11,5 @@
 from srf.views import APIView
 from srf.viewsets import *
 from srf.generics import *
-from srf.serializers import *
+from srf.serializers import ModelSerializer
 from srf.fields import *

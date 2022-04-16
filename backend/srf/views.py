@@ -50,7 +50,7 @@ class APIView(HTTPMethodView):
         if data is None:
             data = {}
         response_body = {
-            'data': data,
+            'result': data,
             'message': msg,
             'status': status
         }

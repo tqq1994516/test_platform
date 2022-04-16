@@ -14,6 +14,9 @@ import re
 from datetime import timezone, timedelta, datetime, date, time
 from enum import Enum
 from typing import Any, List, Mapping
+
+from tortoise import fields
+
 from srf.utils import is_callable, run_awaitable, run_awaitable_val
 
 from tortoise.exceptions import DoesNotExist
@@ -288,6 +291,8 @@ class Field:
         (is_empty_value, data) = self.validate_empty_values(data)
         if is_empty_value:
             return data
+        if hasattr(self, 'Meta'):
+            print(self.Meta.model)
         value = await self.external_to_internal(data)
         self.run_validators(value)
         return value

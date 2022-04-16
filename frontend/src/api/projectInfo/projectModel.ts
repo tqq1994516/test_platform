@@ -1,3 +1,5 @@
+import { BasicListResult } from "../baseModel";
+
 export interface ProjectInfoModel {
   name: string;
   description: string;
@@ -6,4 +8,8 @@ export interface ProjectInfoModel {
   owner: string;
   c_time: string;
   u_time: string;
+}
+
+export interface ProjectInfoListResult extends BasicListResult {
+  results: ProjectInfoModel[];
 }

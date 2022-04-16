@@ -11,16 +11,16 @@ export default {
       // The field name of the current page passed to the background
       pageField: 'page',
       // The number field name of each page displayed in the background
-      sizeField: 'pageSize',
+      sizeField: 'page_size',
       // Field name of the form data returned by the interface
-      listField: 'items',
+      listField: 'results',
       // Total number of tables returned by the interface field name
       totalField: 'total',
     },
     // Number of pages that can be selected
-    pageSizeOptions: ['10', '50', '80', '100'],
+    pageSizeOptions: ['10', '20', '30', '50', '100'],
     // Default display quantity on one page
-    defaultPageSize: 10,
+    defaultPageSize: 20,
     // Default Size
     defaultSize: 'middle',
     // Custom general sort function

@@ -141,7 +141,7 @@ class GenericAPIView(APIView):
         返回给定输出数据的分页样式`Response`对象。
         """
         return {
-            'count': self._paginator.count,
+            'total': self._paginator.count,
             'next': self._paginator.next_link,
             'next_page_num': self._paginator.next_page,
             'previous': self._paginator.previous_link,

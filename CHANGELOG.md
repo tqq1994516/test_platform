@@ -1,12 +1,17 @@
-#  (2022-04-10)
+#  (2022-04-16)
 
 
 ### ✨ Features
 
-* **backend,frontend**: change restful api view class and add project manager page ([35a25a1](https://github.com/tqq1994516/test_platform/commit/35a25a1))
+* **backend,frontend**: change restful api view class and add project manager page ([2a5f024](https://github.com/tqq1994516/test_platform/commit/2a5f024))
 * **backend**: docking jwt ([5f3d534](https://github.com/tqq1994516/test_platform/commit/5f3d534))
 * **backend**: docking jwt ([8ef214c](https://github.com/tqq1994516/test_platform/commit/8ef214c))
 * **signals,users**: add backend init signals and edit frontend login ([5f29432](https://github.com/tqq1994516/test_platform/commit/5f29432))
+
+
+### 🐛 Bug Fixes
+
+* **serializers**: fixing serializers bug ([2a9d7f8](https://github.com/tqq1994516/test_platform/commit/2a9d7f8))
 
 
 ### 🔧 Continuous Integration

@@ -132,7 +132,7 @@ class ModelConverter(ModelConverterBase):
     def convert_floatfield(self, model, model_field, *field_args, **field_kws):
         return FloatField(*field_args, **field_kws)
 
-    @converts('ManyToManyFieldInstance', 'ManyToManyRelation')
+    @converts('ManyToManyFieldInstance', 'ManyToManyRelation', 'ManyToManyField')
     def convert_manytomany(self, model, model_field, *field_args, **field_kws):
         """多对多"""
         nested_depth = field_kws.pop('nested_depth', 10)
