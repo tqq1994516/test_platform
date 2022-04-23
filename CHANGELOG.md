@@ -1,4 +1,4 @@
-#  (2022-04-16)
+#  (2022-04-23)
 
 
 ### ✨ Features
@@ -11,7 +11,8 @@
 
 ### 🐛 Bug Fixes
 
-* **serializers**: fixing serializers bug ([2a9d7f8](https://github.com/tqq1994516/test_platform/commit/2a9d7f8))
+* **backend**: optimize m2m fk field internal to external ([a0c64f7](https://github.com/tqq1994516/test_platform/commit/a0c64f7))
+* **serializers**: fixing serializers bug ([15037bf](https://github.com/tqq1994516/test_platform/commit/15037bf))
 
 
 ### 🔧 Continuous Integration

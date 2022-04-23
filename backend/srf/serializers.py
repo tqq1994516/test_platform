@@ -18,7 +18,7 @@ from tortoise.queryset import ValuesQuery, ValuesListQuery
 
 from srf.utils import run_awaitable, run_awaitable_val
 from srf.converter import ModelConverter
-from srf.fields import (empty, SkipField, Field)
+from srf.fields import empty, SkipField, Field
 from srf.exceptions import ValidationException
 from srf.helpers import BindingDict
 from srf.constant import LIST_SERIALIZER_KWARGS, ALL_FIELDS
@@ -256,7 +256,8 @@ class Serializer(BaseSerializer, metaclass=SerializerMetaclass):
     @property
     def _readable_fields(self):
         for field in self.fields.values():
-            if not field.write_only:
+            # 只读字段不会被序列化且关系字段后续追加
+            if not field.write_only and not isinstance(field, ListSerializer):
                 yield field
 
     def get_fields(self) -> dict:
@@ -504,12 +505,12 @@ class ModelSerializer(Serializer):
 
         model_original_fields = model._meta.fields_map
         model_clean_fields = self._clean_model_field(model_original_fields)
-        self.m2m_fields = self.field_converter(self._get_model_m2m_fields(model_original_fields))
-        self.o2o_fields = self.field_converter(self._get_model_o2o_fields(model_original_fields))
-        self.o2m_fields = self.field_converter(self._get_model_o2m_fields(model_original_fields))
-        self.m2o_fields = self.field_converter(self._get_model_m2o_fields(model_original_fields))
+        self.m2m_fields = self._get_model_m2m_fields(model_original_fields)
+        self.o2o_fields = self._get_model_o2o_fields(model_original_fields)
+        self.o2m_fields = self._get_model_o2m_fields(model_original_fields)
+        self.m2o_fields = self._get_model_m2o_fields(model_original_fields)
         effective_field = self.field_converter(self.get_effective_field(model_clean_fields))
-        effective_field.update(self.m2m_fields)
+        effective_field.update(self.field_converter(self.m2m_fields))
         effective_field.update(declared_fields)
         return effective_field
 
@@ -534,6 +535,7 @@ class ModelSerializer(Serializer):
         """
         res = OrderedDict()
         fields = self._readable_fields
+        print(self.m2m_fields, self.m2o_fields)
         for field in fields:
             method = getattr(self, 'output_{}'.format(field.field_name), None)
             try:
@@ -545,6 +547,11 @@ class ModelSerializer(Serializer):
             if method:
                 value = await run_awaitable(method, value, data)
             res[field.field_name] = value
+        # 根据orm 关系字段修改fk 和 m2m 字段
+        for m2m_name, m2m_class in self.m2m_fields.items():
+            print(m2m_name, m2m_class)
+            await data.fetch_related(m2m_class.forward_key)
+            # res[m2m_name] = await getattr(self, m2m_class.forward_key)
         return res
 
     #  反序列化
@@ -558,12 +565,21 @@ class ModelSerializer(Serializer):
         errors = OrderedDict()
         fields = self._writable_fields
         for field in fields:
-            print(field.field_name, data)
+            # 根据orm返回fk名称修改入参key值
+            if field.field_name.split('_')[0] in data:
+                data[field.field_name] = data.pop(field.field_name.split('_')[0])
+            # 非必要排除关系字段
             if field.field_name not in data or not isinstance(data, dict):
                 continue
             else:
                 validate_method = getattr(self, 'validate_' + field.field_name, None)
                 try:
+                    if field.field_name in self.m2m_fields and field.field_name in data:
+                        for m2m in data[field.field_name]:
+                            if not isinstance(m2m, dict):
+                                data[field.field_name] = [
+                                    {self.m2m_fields[field.field_name].forward_key.split('_')[-1]: temp} for temp in
+                                    data[field.field_name]]
                     primitive_value = field.get_external_value(data)
                     validated_value = await field.run_validation(primitive_value)
                     if validate_method is not None:
@@ -645,7 +661,7 @@ class ModelSerializer(Serializer):
 
         ModelClass = self.Meta.model
         ModelClassMeta = ModelClass._meta
-        many_to_many = self.m2m_fields
+        many_to_many = {}
 
         for m2m_field in ModelClassMeta.m2m_fields:
             if m2m_field in self.fields:
@@ -653,10 +669,8 @@ class ModelSerializer(Serializer):
                     many_to_many[m2m_field] = validated_data.pop(m2m_field)
         try:
             instance = ModelClass()
-            print(validated_data.items())
             for attr, value in validated_data.items():
-                if attr not in many_to_many:
-                    setattr(instance, attr, value)
+                setattr(instance, attr, value)
             await instance.save()
         except TypeError as exc:
             raise exc
@@ -664,7 +678,10 @@ class ModelSerializer(Serializer):
             for field_name, values in many_to_many.items():
                 field = getattr(instance, field_name)
                 for value in values:
-                    await field.add(value)
+                    m2m_instance_list = []
+                    m2m_class = self.m2m_fields[field_name].related_model
+                    q_set = await m2m_class.get_or_none(**value)
+                    await field.add(q_set)
         return instance
 
     async def update(self, instance, validated_data):

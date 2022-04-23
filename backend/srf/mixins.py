@@ -48,18 +48,16 @@ class CreateModelMixin:
     """
 
     async def post(self, request, *args, **kwargs):
-        # TODO:
-        # 根据model owner关系字段名 添加owner key
         request.data['owner'] = await request.app.ctx.auth.extract_user_id(request)
         return await self.create(request, *args, **kwargs)
 
     async def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         await serializer.is_valid(raise_exception=True)
-        # TODO:
-        # m2m字段验证后查询返回到结果中
-        print(serializer.validated_data)
         await self.perform_create(serializer)
+        print(await serializer.data)
+        # TODO:
+        # 返回关系字段序列化
         return self.success_json_response(msg="创建成功！", data=await serializer.data, http_status=HttpStatus.HTTP_201_CREATED)
 
     async def perform_create(self, serializer):

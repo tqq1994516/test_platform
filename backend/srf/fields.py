@@ -291,8 +291,8 @@ class Field:
         (is_empty_value, data) = self.validate_empty_values(data)
         if is_empty_value:
             return data
-        if hasattr(self, 'Meta'):
-            print(self.Meta.model)
+        # if hasattr(self, 'Meta'):
+        #     print(self.__dict__)
         value = await self.external_to_internal(data)
         self.run_validators(value)
         return value
