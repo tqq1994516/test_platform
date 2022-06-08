@@ -135,7 +135,7 @@ async def create_nacose_config(app, loop):
     pass
 
 
-@app.signals(Event.SERVER_INIT_AFTER)
+@app.before_server_start
 async def send_nacos_beat(app, loop):
     """_summary_
 
