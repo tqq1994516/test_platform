@@ -11,21 +11,22 @@ import os
 # Web app cofing
 from srf.constant import ALL_METHOD
 
-IS_DEBUG = True
+IS_DEV = True
 TIME_OUT = 60
 APP_NAME = "test_platform"
 HOST = '0.0.0.0'
 PORT = 8800
-DEBUG = IS_DEBUG
-ACCESS_LOG = IS_DEBUG
-AUTO_RELOAD = False
-FAST = True
+DEV = IS_DEV
+ACCESS_LOG = IS_DEV
+FAST = not IS_DEV
+EVENT_AUTOREGISTER = True
 KEEP_ALIVE_TIMEOUT = TIME_OUT
 REQUEST_TIMEOUT = TIME_OUT
 RESPONSE_TIMEOUT = TIME_OUT
 OAS_UI_DEFAULT = "swagger"
 USER_MODEL = 'apps.system.models.Users'
 TTL = 60 * 60 * 8
+EXECUTE_LOG_FOLDER = 'execute_log'
 
 # Apps config
 AUTO_LOAD_APPS = True
@@ -65,3 +66,13 @@ SANIC_JWT_SECRET = "U#+ivP*,oCX6}3?WC.6|Y"
 
 # cors config
 CORS_METHODS = list(ALL_METHOD)
+
+# pulsar config
+PULSAR_HOST = '10.10.112.66'
+PULSAR_PORT = '6650'
+PULSAR_TENANTS = 'pro_used' if not IS_DEV else 'test_used'
+
+# nacos config
+NACOS_HOST = '10.10.112.66'
+NACOS_PORT = '38848'
+NACOS_NAMESPACE = 'test_platform'

@@ -5,18 +5,16 @@
 # @File : serializers.py
 # @Project : test_platform
 # @Description : serializer file
-from srf import ModelSerializer
+from srf import DataModelSerializer
 
-from apps.third_system.models import Tasks, Bugs
+from apps.third_system.models import *
 
 
-class TasksSerializer(ModelSerializer):
-    class Meta:
+class TasksSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Tasks
-        read_only_fields = 'id'
 
 
-class BugsSerializer(ModelSerializer):
-    class Meta:
+class BugsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Bugs
-        read_only_fields = 'id'

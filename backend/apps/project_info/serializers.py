@@ -5,24 +5,21 @@
 # @File : serializers.py
 # @Project : test_platform
 # @Description : serializer file
-from srf import ModelSerializer
+from srf import DataModelSerializer
 
-from apps.project_info.models import ProjectInfo, Envs, Versions
+from apps.project_info.models import *
 
 
-class ProjectInfoSerializer(ModelSerializer):
-    class Meta:
+class ProjectInfoSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = ProjectInfo
-        read_only_fields = 'id'
 
 
-class EnvsSerializer(ModelSerializer):
-    class Meta:
+class EnvsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Envs
-        read_only_fields = 'id'
 
 
-class VersionsSerializer(ModelSerializer):
-    class Meta:
+class VersionsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Versions
-        read_only_fields = 'id'

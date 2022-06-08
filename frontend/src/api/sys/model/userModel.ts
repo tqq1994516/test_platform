@@ -1,3 +1,5 @@
+import { BasicListResult } from "../../baseModel";
+
 /**
  * @description: Login interface parameters
  */
@@ -25,7 +27,7 @@ export interface LoginResultModel {
 export interface GetUserInfoModel {
   groups: GroupInfo[];
   // 用户id
-  user_id: string | number;
+  id: string | number;
   // 用户名
   username: string;
   // 真实名字
@@ -38,4 +40,8 @@ export interface GetUserInfoModel {
 
 export interface MeInfo {
   me: GetUserInfoModel;
+}
+
+export interface UserInfoListResult extends BasicListResult {
+  results: GetUserInfoModel[];
 }

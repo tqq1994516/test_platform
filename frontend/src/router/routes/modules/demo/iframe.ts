@@ -42,6 +42,15 @@ const iframe: AppRouteModule = {
         title: t('routes.demo.iframe.docExternal'),
       },
     },
+    {
+      path: 'selenium_grid',
+      name: 'SeleniumGrid',
+      component: IFrame,
+      meta: {
+        frameSrc: 'http://10.10.112.66:4444',
+        title: t('routes.demo.iframe.antv'),
+      },
+    },
   ],
 };
 

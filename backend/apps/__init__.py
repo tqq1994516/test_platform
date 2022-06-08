@@ -11,16 +11,15 @@ from pathlib import Path
 
 from sanic import Sanic
 from sanic_babel import Babel
-from sanic_ext.utils.route import get_blueprinted_routes
 from sanic_jwt import Initialize
 from tortoise.contrib.sanic import register_tortoise
 
 from srf.helpers import get_user_models
-from srf.redis_tool import set_value, get_value
+from srf.redis_ext.redis_tool import set_value, get_value
+from srf.redis_ext.redis_ext import RedisExtension
 from srf.app_helper import AppsHelper
 from srf.request import SRFRequest
 from srf.authentication import authenticate, logout_register
-from srf.redis_ext import RedisExtension
 from settings import APP_NAME, API_VERSION, CACHE_REFRESH_PREFIX
 
 logging.basicConfig(filename="access.log")

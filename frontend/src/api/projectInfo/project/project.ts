@@ -1,4 +1,4 @@
-import { ProjectInfoListResult, ProjectInfoModel } from '../projectModel';
+import { ProjectInfoListResult } from '../projectModel';
 import { defHttp } from '/@/utils/http/axios';
 
 enum Api {

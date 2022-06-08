@@ -18,7 +18,7 @@ from settings import CACHE_REFRESH_PREFIX
 from srf import ModelSerializer
 from srf.encryption_algorithm import genearteMD5
 from srf.helpers import get_user_models
-from srf.redis_tool import del_key
+from srf.redis_ext.redis_tool import del_key
 from srf.request import SRFRequest
 from srf.status import HttpStatus
 

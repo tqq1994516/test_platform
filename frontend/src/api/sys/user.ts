@@ -1,5 +1,5 @@
 import { defHttp } from '/@/utils/http/axios';
-import { LoginParams, LoginResultModel, GetUserInfoModel, MeInfo } from './model/userModel';
+import { LoginParams, LoginResultModel, GetUserInfoModel, MeInfo, UserInfoListResult } from './model/userModel';
 
 import { ErrorMessageMode } from '/#/axios';
 
@@ -10,6 +10,7 @@ enum Api {
   Me = '/auth/me',
   Refresh = '/auth/Refresh',
   GetPermCode = '/system/permissions',
+  Users = '/system/users/',
 }
 
 /**
@@ -46,7 +47,7 @@ export function refreshApi(params: LoginParams, mode: ErrorMessageMode = 'modal'
 }
 
 export function getPermCode() {
-  return defHttp.get<string[]>({ url: Api.GetPermCode})
+  return defHttp.get<string[]>({ url: Api.GetPermCode});
 }
 
 /**
@@ -64,6 +65,9 @@ export function doLogout() {
   return defHttp.get({ url: Api.Logout, }, { joinPrefix: false, isTransformResponse: false, });
 }
 
+export function getUser(params: number) {
+  return defHttp.get<UserInfoListResult>({ url: `${Api.Users}${params}/` });
+}
 // export function testRetry() {
 //   return defHttp.get(
 //     { url: Api.TestRetry },

@@ -3,9 +3,9 @@ import { BasicListResult } from "../baseModel";
 export interface ProjectInfoModel {
   name: string;
   description: string;
-  masters: string[];
-  members: string[];
-  owner: string;
+  masters: string[] | number[];
+  members: string[] | number[];
+  owner: string | number;
   c_time: string;
   u_time: string;
 }

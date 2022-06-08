@@ -5,43 +5,37 @@
 # @File : serializers.py
 # @Project : test_platform
 # @Description : serializer file
-from srf import ModelSerializer
+from srf import DataModelSerializer
 
-from apps.system.models import Users, Groups, Roles, Apps, Permissions, Tags
+from apps.system.models import *
 
 
-class UsersSerializer(ModelSerializer):
-    class Meta:
+class UsersSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Users
-        read_only_fields = 'id'
-        exclude = ('password', 'is_online')
+        exclude = ('password', 'is_online', 'is_deleted')
 
 
-class AppsSerializer(ModelSerializer):
-    class Meta:
+class AppsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Apps
-        read_only_fields = 'id'
 
 
-class GroupsSerializer(ModelSerializer):
-    class Meta:
+class GroupsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Groups
-        read_only_fields = 'id'
 
 
-class RolesSerializer(ModelSerializer):
-    class Meta:
+class RolesSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Roles
-        read_only_fields = 'id'
 
 
-class PermissionsSerializer(ModelSerializer):
-    class Meta:
+class PermissionsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Permissions
-        read_only_fields = 'id'
 
 
-class TagsSerializer(ModelSerializer):
-    class Meta:
+class TagsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Tags
-        read_only_fields = 'id'

@@ -55,9 +55,6 @@ class CreateModelMixin:
         serializer = self.get_serializer(data=request.data)
         await serializer.is_valid(raise_exception=True)
         await self.perform_create(serializer)
-        print(await serializer.data)
-        # TODO:
-        # 返回关系字段序列化
         return self.success_json_response(msg="创建成功！", data=await serializer.data, http_status=HttpStatus.HTTP_201_CREATED)
 
     async def perform_create(self, serializer):
@@ -75,10 +72,11 @@ class RetrieveModelMixin:
         else:
             kwargs.pop(self.lookup_field)
             return await self.list(request, *args, **kwargs)
-
     async def retrieve(self, request, *args, **kwargs):
+        self.kwargs = kwargs
+        self.request = request
         instance = await self.get_object()
-        serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(request, instance)
         return self.success_json_response(msg="查询成功！", data=await serializer.data)
 
 
@@ -94,9 +92,11 @@ class UpdateModelMixin:
         return await self.partial_update(request, *args, **kwargs)
 
     async def update(self, request, *args, **kwargs):
+        self.kwargs = kwargs
+        self.request = request
         partial = kwargs.pop('partial', False)
         instance = await self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(request, instance, data=request.data, partial=partial)
         await serializer.is_valid(raise_exception=True)
         await self.perform_update(serializer)
         return self.success_json_response(msg="更新成功！", data=await serializer.data)
@@ -118,6 +118,8 @@ class DestroyModelMixin:
         return await self.destroy(request, *args, **kwargs)
 
     async def destroy(self, request, *args, **kwargs):
+        self.kwargs = kwargs
+        self.request = request
         instance = await self.get_object()
         await self.perform_destroy(instance)
         return self.success_json_response(msg="删除成功！", http_status=HttpStatus.HTTP_200_OK)

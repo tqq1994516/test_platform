@@ -130,6 +130,10 @@ export const treeProps = buildProps({
   checkOnSearch: Boolean,
   // 搜索完成自动select所有结果
   selectedOnSearch: Boolean,
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export type TreeProps = ExtractPropTypes<typeof treeProps>;
@@ -141,6 +145,7 @@ export interface ContextMenuItem {
   handler?: Fn;
   divider?: boolean;
   children?: ContextMenuItem[];
+  hidden?: boolean;
 }
 
 export interface ContextMenuOptions {
@@ -181,4 +186,9 @@ export interface TreeActionType {
   updateNodeByKey: (key: string, node: Omit<TreeDataItem, 'key'>) => void;
   setSearchValue: (value: string) => void;
   getSearchValue: () => string;
+  getSelectedNode: (
+    key: KeyType,
+    treeList?: TreeItem[],
+    selectNode?: TreeItem | null,
+  ) => TreeItem | null;
 }

@@ -5,55 +5,56 @@
 # @File : serializers.py
 # @Project : test_platform
 # @Description : serializer file
-from srf import ModelSerializer
+from srf import DataModelSerializer
 
-from apps.testcase_manager.models import TestcaseSites, Testcases, TestcaseDetail, TestcaseOperationSteps, \
-    TestcaseDependence, TestcaseFiles, TestcaseComments, TestcaseChangeLogs
+from apps.testcase_manager.models import *
 
 
-class TestcaseSitesSerializer(ModelSerializer):
-    class Meta:
+class TestcaseSitesSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseSites
-        read_only_fields = 'id'
 
 
-class TestcasesSerializer(ModelSerializer):
-    class Meta:
+class TestcasesSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = Testcases
-        read_only_fields = 'id'
 
 
-class TestcaseDetailSerializer(ModelSerializer):
-    class Meta:
+class TestcaseDetailSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseDetail
-        read_only_fields = 'id'
 
 
-class TestcaseOperationStepsSerializer(ModelSerializer):
-    class Meta:
+class TestcaseOperationStepsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseOperationSteps
-        read_only_fields = 'id'
 
 
-class TestcaseDependenceSerializer(ModelSerializer):
-    class Meta:
+class TestcaseDependenceSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseDependence
-        read_only_fields = 'id'
 
 
-class TestcaseFilesSerializer(ModelSerializer):
-    class Meta:
+class TestcaseFilesSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseFiles
-        read_only_fields = 'id'
 
 
-class TestcaseCommentsSerializer(ModelSerializer):
-    class Meta:
+class TestcaseCommentsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseComments
-        read_only_fields = 'id'
 
 
-class TestcaseChangeLogsSerializer(ModelSerializer):
-    class Meta:
+class TestcaseChangeLogsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
         model = TestcaseChangeLogs
-        read_only_fields = 'id'
+
+
+class TestcaseExecuteRecordsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
+        model = TestcaseExecuteRecords
+
+
+class TestcaseExecuteLogsSerializer(DataModelSerializer):
+    class Meta(DataModelSerializer.Meta):
+        model = TestcaseExecuteLogs

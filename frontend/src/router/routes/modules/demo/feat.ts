@@ -32,6 +32,14 @@ const feat: AppRouteModule = {
       },
     },
     {
+      path: 'ws-local',
+      name: 'LocalTest',
+      component: () => import('/@/views/demo/feat/ws-local/index.vue'),
+      meta: {
+        title: t('routes.demo.feat.ws'),
+      },
+    },
+    {
       path: 'request',
       name: 'RequestDemo',
       // @ts-ignore

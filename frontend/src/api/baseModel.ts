@@ -6,3 +6,10 @@ export interface BasicListResult {
   previous_num: number;
   results: any[];
 }
+
+export interface BasicResult {
+  id: number;
+  c_time: string|number;
+  u_time: string|number;
+  owner: string|number;
+}

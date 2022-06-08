@@ -7,10 +7,10 @@
 # @Description : third system model
 from sanic.blueprints import Blueprint
 
-# 不可使用驼峰写法
-from apps.third_system.views import TasksView, BugsView
+from apps.third_system.views import *
 from settings import API_VERSION
 
+# 不可使用驼峰写法
 PATH = '/third_system'
 NAME = 'third_system'
 third_system = Blueprint(NAME, PATH, version=API_VERSION[0])

@@ -509,7 +509,8 @@ class ModelSerializer(Serializer):
         self.o2o_fields = self._get_model_o2o_fields(model_original_fields)
         self.o2m_fields = self._get_model_o2m_fields(model_original_fields)
         self.m2o_fields = self._get_model_m2o_fields(model_original_fields)
-        effective_field = self.field_converter(self.get_effective_field(model_clean_fields))
+        self.effective_field = self.get_effective_field(model_clean_fields)
+        effective_field = self.field_converter(self.effective_field)
         effective_field.update(self.field_converter(self.m2m_fields))
         effective_field.update(declared_fields)
         return effective_field
@@ -535,23 +536,57 @@ class ModelSerializer(Serializer):
         """
         res = OrderedDict()
         fields = self._readable_fields
-        print(self.m2m_fields, self.m2o_fields)
         for field in fields:
-            method = getattr(self, 'output_{}'.format(field.field_name), None)
-            try:
-                value = await field.get_internal_value(data)
-            except SkipField:
-                continue
-            if value is not None:
-                value = await field.internal_to_external(value)
-            if method:
-                value = await run_awaitable(method, value, data)
-            res[field.field_name] = value
+            if field.field_name in self.effective_field:
+                method = getattr(self, 'output_{}'.format(field.field_name), None)
+                try:
+                    value = await field.get_internal_value(data)
+                except SkipField:
+                    continue
+                if value is not None:
+                    value = await field.internal_to_external(value)
+                if method:
+                    value = await run_awaitable(method, value, data)
+                res[field.field_name] = value
         # 根据orm 关系字段修改fk 和 m2m 字段
-        for m2m_name, m2m_class in self.m2m_fields.items():
-            print(m2m_name, m2m_class)
-            await data.fetch_related(m2m_class.forward_key)
-            # res[m2m_name] = await getattr(self, m2m_class.forward_key)
+        if not hasattr(data.Meta, "deptch"):
+            for m2m_name, m2m_class in self.m2m_fields.items():
+                if (self.meta_exclude and m2m_name not in self.meta_exclude) or (self.meta_fields and m2m_name in self.meta_fields):
+                    m2m_instances = await getattr(data, m2m_name)
+                    if m2m_instances:
+                        res[m2m_name] = [getattr(m2m_instance, m2m_class.forward_key.split('_')[-1]) for m2m_instance in
+                                         m2m_instances]
+                    else:
+                        res[m2m_name] = []
+            for m2o_name, m2o_class in self.m2o_fields.items():
+                if (self.meta_exclude and m2o_name not in self.meta_exclude) or (self.meta_fields and m2m_name in self.meta_fields):
+                    m2o_instance = await getattr(data, m2o_name)
+                    if m2o_instance:
+                        res[m2o_name] = getattr(m2o_instance, m2o_class.to_field)
+                    else:
+                        res[m2o_name] = None
+        else:
+            for m2m_name, m2m_class in self.m2m_fields.items():
+                if (self.meta_exclude and m2m_name not in self.meta_exclude) or (self.meta_fields and m2m_name in self.meta_fields):
+                    m2m_instances = await getattr(data, m2m_name)
+                    if m2m_instances:
+                        res[m2m_name] = [
+                            await m2m_instance.to_dict() if hasattr(m2m_instance, 'to_dict') else getattr(m2m_instance,
+                                                                                                          m2m_class.forward_key.split(
+                                                                                                              '_')[-1]) for
+                            m2m_instance in m2m_instances]
+                    else:
+                        res[m2m_name] = []
+            for m2o_name, m2o_class in self.m2o_fields.items():
+                if (self.meta_exclude and m2m_name not in self.meta_exclude) or (self.meta_fields and m2m_name in self.meta_fields):
+                    m2o_instance = await getattr(data, m2o_name)
+                    if m2o_instance:
+                        if hasattr(m2o_instance, 'to_dict'):
+                            res[m2o_name] = await m2o_instance.to_dict()
+                        else:
+                            res[m2o_name] = getattr(m2o_instance, m2o_class.to_field)
+                    else:
+                        res[m2o_name] = None
         return res
 
     #  反序列化
@@ -600,17 +635,17 @@ class ModelSerializer(Serializer):
         :param model_fields: 模型字段
         :return:
         """
-        meta_fields = getattr(self.Meta, 'fields', None)
-        meta_exclude = getattr(self.Meta, 'exclude', None)
-        if meta_exclude and meta_fields:
+        self.meta_fields = getattr(self.Meta, 'fields', None)
+        self.meta_exclude = getattr(self.Meta, 'exclude', None)
+        if self.meta_exclude and self.meta_fields:
             raise ValueError('class ”{}“ ’Meta.fields‘ 和 ’Meta.exclude‘ 不可以共存 '.format(self.__class__.__name__))
 
-        if meta_exclude is not None:
-            return {k: v for k, v in model_fields.items() if k not in meta_exclude}
-        elif meta_exclude is None and (meta_fields is None or meta_fields is ALL_FIELDS):
+        if self.meta_exclude is not None:
+            return {k: v for k, v in model_fields.items() if k not in self.meta_exclude}
+        elif self.meta_exclude is None and (self.meta_fields is None or self.meta_fields is ALL_FIELDS):
             return model_fields
         else:
-            return {k: v for k, v in model_fields.items() if k in meta_fields}
+            return {k: v for k, v in model_fields.items() if k in self.meta_fields}
 
     def get_field_kws_by_meta(self, field_name):
         """
@@ -678,7 +713,6 @@ class ModelSerializer(Serializer):
             for field_name, values in many_to_many.items():
                 field = getattr(instance, field_name)
                 for value in values:
-                    m2m_instance_list = []
                     m2m_class = self.m2m_fields[field_name].related_model
                     q_set = await m2m_class.get_or_none(**value)
                     await field.add(q_set)
@@ -748,3 +782,9 @@ class ModelSerializer(Serializer):
         """
         return {field_name: field_class for field_name, field_class in model_fields.items() if
                 isinstance(field_class, tortoise_fields.relational.BackwardFKRelation)}
+
+
+class DataModelSerializer(ModelSerializer):
+    class Meta:
+        read_only_fields = 'id', 'c_time', 'u_time', 'owner', 'is_deleted'
+        exclude = 'is_deleted'

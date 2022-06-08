@@ -7,9 +7,10 @@
 # @Description : system model
 from sanic.blueprints import Blueprint
 
-from apps.system.views import UsersView, AppsView, GroupsView, RolesView, PermissionsView, TagsView
+from apps.system.views import *
 from settings import API_VERSION
 
+# 不可使用驼峰写法
 PATH = '/system'
 NAME = 'system'
 system = Blueprint(NAME, PATH, version=API_VERSION[0])

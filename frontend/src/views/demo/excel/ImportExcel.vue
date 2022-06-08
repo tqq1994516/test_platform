@@ -37,14 +37,14 @@
         for (const excelData of excelDataList) {
           const {
             header,
-            results,
+            ,
             meta: { sheetName },
           } = excelData;
           const columns: BasicColumn[] = [];
           for (const title of header) {
             columns.push({ title, dataIndex: title });
           }
-          tableListRef.value.push({ title: sheetName, dataSource: results, columns });
+          tableListRef.value.push({ title: sheetName, dataSource: , columns });
         }
       }
 

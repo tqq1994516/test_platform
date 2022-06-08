@@ -1,9 +1,10 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .benchmarks/
-data/.history/
 node_modules
 .vscode
+.history
+*.txt
 
 
 *.py[cod]

@@ -15,8 +15,15 @@ class BaseModel(Model):
         return self.id
 
     id = fields.BigIntField(pk=True, default=1, null=False, unique=True, index=True, description="id 主键")
+    is_delete = fields.BooleanField(default=False, description="是否删除")
     c_time = fields.DatetimeField(auto_now_add=True, null=True, description='创建时间')
     u_time = fields.DatetimeField(auto_now=True, null=True, description='最后更新时间')
+
+    async def to_dict(self):
+        res = {}
+        for k in self.Meta.fields:
+            res[k] = getattr(self, k)
+        return res
 
 
 class DataModel(BaseModel):

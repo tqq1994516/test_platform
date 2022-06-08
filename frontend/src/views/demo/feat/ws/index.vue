@@ -68,12 +68,13 @@
     },
     setup() {
       const state = reactive({
-        server: 'ws://localhost:3300/test',
+        server: 'ws://192.168.145.128:8800/v1/testcase_manager/testcase_run',
         sendValue: '',
         recordList: [] as { id: number; time: number; res: string }[],
       });
 
       const { status, data, send, close, open } = useWebSocket(state.server, {
+        immediate: false,
         autoReconnect: false,
         heartbeat: true,
       });
@@ -120,7 +121,7 @@
         getList,
         toggle,
         getIsOpen,
-        getTagColor,
+        getTagColor
       };
     },
   });

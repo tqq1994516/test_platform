@@ -60,6 +60,11 @@ class OperationStepType(IntEnum):
     STEP = 2  # 步骤描述
 
 
+class TestcaseExecuteType(IntEnum):
+    LOCAL = 1  # 本地执行
+    REMOTE = 2  # 远程执行
+
+
 class TestcaseSites(DataModel):
     name = fields.CharField(50, unique=True, description="用例集名称")
     description = fields.CharField(150, default='', null=True, description="用例集描述")
@@ -160,3 +165,24 @@ class TestcaseChangeLogs(DataModel):
     class Meta:
         table = 't_testcase_change_logs'
         table_description = "用例变更历史表"
+
+
+class TestcaseExecuteRecords(DataModel):
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
+    execute_time = fields.DatetimeField(null=True, description="执行时间")
+    execute_result = fields.CharField(max_length=50, description="执行结果")
+    execute_type = fields.IntEnumField(TestcaseExecuteType, description="执行类型")
+
+    class Meta:
+        table = 't_testcase_execute_records'
+        table_description = "用例执行记录表"
+
+
+class TestcaseExecuteLogs(DataModel):
+    testcase = fields.ForeignKeyField("testcase_manager.Testcases", null=True, description="关联用例")
+    execute_record = fields.ForeignKeyField("testcase_manager.TestcaseExecuteRecords", null=True, description="关联运行记录")
+    log_path = fields.TextField(default="", description="日志存储地址")
+
+    class Meta:
+        table = 't_testcase_execute_logs'
+        table_description = '用例执行日志表'

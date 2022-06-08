@@ -1,10 +1,13 @@
-import importlib
+import json
+import os
 
 from tortoise.expressions import Q
 
 from apps import app
 from apps.system.models import Permissions, Models, Users, Roles, Groups
+from settings import EXECUTE_LOG_FOLDER
 from srf.encryption_algorithm import genearteMD5
+from srf.mq_ext.pulsar_plugin import pulsar_producer, UiSelectorSchema
 
 
 def collection_permissions():
@@ -24,6 +27,12 @@ def collection_permissions():
             model_permissions[app_name].append("edit_" + m)
             model_permissions[app_name].append("del_" + m)
     return model_permissions
+
+
+@app.before_server_start
+async def prepare_run_env(app, loop):
+    if not os.path.exists(EXECUTE_LOG_FOLDER):
+        os.makedirs(EXECUTE_LOG_FOLDER)
 
 
 @app.before_server_start
@@ -109,3 +118,53 @@ async def update_superadmin_info(app, loop):
     superadmin = await Users.filter(username="superadmin").first()
     supergroup = await Groups.filter(name="superadminGroup")
     await superadmin.groups.add(*supergroup)
+
+
+@app.before_server_start
+async def create_nacose_service(app, loop):
+    pass
+
+
+@app.before_server_start
+async def create_nacose_instance(app, loop):
+    pass
+
+
+@app.before_server_start
+async def create_nacose_config(app, loop):
+    pass
+
+
+@app.signals(Event.SERVER_INIT_AFTER)
+async def send_nacos_beat(app, loop):
+    """_summary_
+
+    Args:
+        app (_type_): _description_
+        loop (_type_): _description_
+    """
+    pass
+
+
+@app.signal('testcase.run.<exec>')
+async def my_custom_action(exec, **context):
+    """
+    自定义信号
+    :param exec:
+    :param context:
+    :return:
+    """
+    context['request_id'] = str(context['request_id'])
+    pulsar_producer(f'{exec=}', message=UiSelectorSchema(**context))
+
+
+@app.signal('testcase.result.<status>')
+def my_custom_action(status, **context):
+    """
+    自定义信号
+    :param status:
+    :param context:
+    :return:
+    """
+    print(status)
+    print(context)

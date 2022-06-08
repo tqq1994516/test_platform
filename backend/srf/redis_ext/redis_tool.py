@@ -2,7 +2,7 @@
 # @Time : 2022/3/18 16:54
 # @Author : chenxu.tian
 # @Email : chenxu.tian@horizon.ai
-# @File : redis_tool.py
+# @File : redis_ext.py
 # @Project : backend
 # @Description : redis operation tool
 from functools import wraps

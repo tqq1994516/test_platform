@@ -53,7 +53,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       ],
     },
     server: {
-      https: true,
+      https: false,
       // Listening on all local IPs
       host: true,
       port: VITE_PORT,
@@ -64,8 +64,8 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       pure: VITE_DROP_CONSOLE ? ['console.log', 'debugger'] : [],
     },
     build: {
-      target: 'es2015',
-      cssTarget: 'chrome80',
+      target: 'es2016',
+      cssTarget: 'chrome100',
       outDir: OUTPUT_DIR,
       // minify: 'terser',
       /**

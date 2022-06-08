@@ -25,9 +25,4 @@ class SRFRequest(SanicRequest):
 
     @property
     def data(self):
-        try:
-            data = self.json
-        except InvalidUsage as exc:
-            data = self.form
-        data = {} if data is None else data
-        return data
+        return self.json if self.json else self.args
