@@ -13,7 +13,8 @@
 ### 🎫 Chores
 
 * **build**: add frontend build type dependent ([449f2c9](https://github.com/tqq1994516/test_platform/commit/449f2c9))
-* **var**: remove var dir ignore ([de903a2](https://github.com/tqq1994516/test_platform/commit/de903a2))
+* **environment**: rename environment ([3ab62ed](https://github.com/tqq1994516/test_platform/commit/3ab62ed))
+* **var**: remove var dir ignore ([0f91fd6](https://github.com/tqq1994516/test_platform/commit/0f91fd6))
 
 
 ### 🐛 Bug Fixes
