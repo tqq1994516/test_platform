@@ -549,7 +549,7 @@ class ModelSerializer(Serializer):
                     value = await run_awaitable(method, value, data)
                 res[field.field_name] = value
         # 根据orm 关系字段修改fk 和 m2m 字段
-        if not hasattr(data.Meta, "deptch"):
+        if not hasattr(data.Meta, "depth"):
             for m2m_name, m2m_class in self.m2m_fields.items():
                 if (self.meta_exclude and m2m_name not in self.meta_exclude) or (self.meta_fields and m2m_name in self.meta_fields):
                     m2m_instances = await getattr(data, m2m_name)
@@ -732,13 +732,20 @@ class ModelSerializer(Serializer):
         await instance.save()
         for attr, values in m2m_fields:
             field = getattr(instance, attr)
+            # 获取现在全部m2m，根据传入m2m的值，移除未传入，保留传入的
+            relateds = await field.all().values()
+            related_list = [r['id'] for r in relateds]
             for value in values:
-                value, _ = await field.remote_model.get_or_create(**value)
-                await field.add(value)
+                try:
+                    related_list.remove(value['id'])
+                    continue
+                except ValueError:
+                    value, _ = await field.remote_model.get_or_create(**value)
+                    await field.add(value)
+            for d in related_list:
+                value, _ = await field.remote_model.get_or_create(id=d)
+                await field.remove(value)
         return instance
-
-    def check_relationship(self):
-        """检查关系字段 目前不能为关系字段提供自动转换功能"""
 
     def _get_model_basis_fields(self, model_fields):
         """

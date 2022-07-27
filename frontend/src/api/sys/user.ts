@@ -65,8 +65,13 @@ export function doLogout() {
   return defHttp.get({ url: Api.Logout, }, { joinPrefix: false, isTransformResponse: false, });
 }
 
-export function getUser(params: number) {
-  return defHttp.get<UserInfoListResult>({ url: `${Api.Users}${params}/` });
+export function getUser(id: number) {
+  return defHttp.get<GetUserInfoModel>({ url: `${Api.Users}${id}/` });
+}
+
+export function getUsers(params?: { username: string }) {
+  params = { page: 1, pageSize: 100, ...params, };
+  return defHttp.get<UserInfoListResult>({ url: `${Api.Users}`, params });
 }
 // export function testRetry() {
 //   return defHttp.get(

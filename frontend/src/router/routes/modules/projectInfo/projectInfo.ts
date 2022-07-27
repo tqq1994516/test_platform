@@ -17,6 +17,18 @@ const projectInfo: AppRouteModule = {
   children: [
 
     {
+      path: 'project/:action/:id?',
+      name: 'ProjectDetail',
+      component: () => import('/@/views/projectInfo/project/projectDetail.vue'),
+      meta: {
+        hideMenu: true,
+        title: t('routes.projectInfo.projectInfo.projectDetail.title'),
+        ignoreKeepAlive: false,
+        showMenu: false,
+        currentActiveMenu: '/projectInfo/project',
+      },
+    },
+    {
       path: 'project',
       name: 'Project',
       component: () => import('/@/views/projectInfo/project/project.vue'),

@@ -5,6 +5,9 @@
 # @Project : test_platform
 # @Description : baseModels
 from tortoise import Model, fields
+from tortoise.fields.relational import ManyToManyRelation
+from tortoise.queryset import QuerySet
+from datetime import datetime
 
 
 class BaseModel(Model):
@@ -21,8 +24,15 @@ class BaseModel(Model):
 
     async def to_dict(self):
         res = {}
-        for k in self.Meta.fields:
-            res[k] = getattr(self, k)
+        for k in self._meta.fields:
+            # fk m2m原始字段不进行返回，time转str
+            if isinstance(getattr(self, k), (QuerySet, ManyToManyRelation)):
+                continue
+            else:
+                if isinstance(getattr(self, k), datetime):
+                    res[k] = getattr(self, k).strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    res[k] = getattr(self, k)
         return res
 
 

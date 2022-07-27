@@ -95,7 +95,8 @@ class Field:
         self.label = label
         self.description = description
 
-        self.validators = self.collect_validators([validators, self.default_validators])
+        self.validators = self.collect_validators(
+            [validators, self.default_validators])
         self.error_messages = self.collect_error_message(
             [self.base_error_messages, self.default_error_messages, error_messages])
 
@@ -122,7 +123,8 @@ class Field:
             for item in self._args
         ]
         kwargs = {
-            key: (copy.deepcopy(value, memo) if (key not in ('validators', 'regex')) else value)
+            key: (copy.deepcopy(value, memo) if (
+                key not in ('validators', 'regex')) else value)
             for key, value in self._kwargs.items()
         }
         return self.__class__(*args, **kwargs)
@@ -180,13 +182,15 @@ class Field:
     async def external_to_internal(self, data: Any) -> Any:
         """对数据进行反序列化转换并返回"""
         raise NotImplementedError(
-            '{cls}类的 .external_to_internal 方法必须重写'.format(cls=self.__class__.__name__, )
+            '{cls}类的 .external_to_internal 方法必须重写'.format(
+                cls=self.__class__.__name__, )
         )
 
     async def internal_to_external(self, data: Any) -> Any:
         """对数据进行序列化转换并返回"""
         raise NotImplementedError(
-            '{cls}类的 .external_to_internal 方法必须重写'.format(cls=self.__class__.__name__, )
+            '{cls}类的 .external_to_internal 方法必须重写'.format(
+                cls=self.__class__.__name__, )
         )
 
     def get_external_value(self, data: Mapping) -> Any:
@@ -197,7 +201,8 @@ class Field:
         :return:
         """
         if not isinstance(data, Mapping):
-            raise ValidationException('传入的数据为无效数据类型，仅支持字典类型'.format(self.field_name))
+            raise ValidationException(
+                '传入的数据为无效数据类型，仅支持字典类型'.format(self.field_name))
         if self.field_name not in data:
             if self.is_partial():
                 return empty
@@ -235,7 +240,8 @@ class Field:
                     return None
                 if not self.required:
                     raise SkipField()
-                raise type(exc)('在序列化过程中字段{field_name}未能成功序列化'.format(field_name=self.field_name))
+                raise type(exc)('在序列化过程中字段{field_name}未能成功序列化'.format(
+                    field_name=self.field_name))
         return instance
 
     def run_validators(self, data) -> None:
@@ -291,8 +297,10 @@ class Field:
         (is_empty_value, data) = self.validate_empty_values(data)
         if is_empty_value:
             return data
-        # if hasattr(self, 'Meta'):
-        #     print(self.__dict__)
+        # m2m字段在处理多个时需要额外拆解验证
+        if isinstance(data, dict) and self.__class__ in [CharField, IntegerField, FloatField, BooleanField, DecimalField, DateTimeField, DateField, TimeField, ChoiceField, EnumChoiceField]:
+            for val in data.values():
+                data = val
         value = await self.external_to_internal(data)
         self.run_validators(value)
         return value
@@ -326,7 +334,8 @@ class Field:
         except KeyError:
             class_name = self.__class__.__name__
             msg = "在 {class_name} 类的 error_messages " \
-                  "属性中未能找到 Key 为 {key} 的错误描述".format(class_name=class_name, key=_key)
+                  "属性中未能找到 Key 为 {key} 的错误描述".format(
+                      class_name=class_name, key=_key)
             raise AssertionError(msg)
         message_string = msg.format(**kwargs)
         raise ValidationException(message_string, code=_key)
@@ -389,7 +398,8 @@ class IntegerField(Field):
 
     async def external_to_internal(self, data: Any):
         if isinstance(data, str) and len(data) > self.MAX_STRING_LENGTH:
-            self.raise_error('max_string_length', max_string_length=self.MAX_STRING_LENGTH)
+            self.raise_error('max_string_length',
+                             max_string_length=self.MAX_STRING_LENGTH)
         try:
             data = int(self.re_decimal.sub('', str(data)))
         except (ValueError, TypeError):
@@ -414,7 +424,8 @@ class FloatField(IntegerField):
         if isinstance(data, bool):
             self.raise_error('invalid', data_type=type(data).__name__)
         if isinstance(data, str) and len(data) > self.MAX_STRING_LENGTH:
-            self.raise_error('max_string_length', max_string_length=self.MAX_STRING_LENGTH)
+            self.raise_error('max_string_length',
+                             max_string_length=self.MAX_STRING_LENGTH)
         try:
             return float(data)
         except (TypeError, ValueError):
@@ -472,7 +483,8 @@ class DecimalField(Field):
         data = str(data).strip()
 
         if len(data) > self.MAX_STRING_LENGTH:
-            self.raise_error('max_string_length', max_string_length=self.MAX_STRING_LENGTH)
+            self.raise_error('max_string_length',
+                             max_string_length=self.MAX_STRING_LENGTH)
         try:
             data = decimal.Decimal(data)
         except decimal.DecimalException:
@@ -523,9 +535,11 @@ class DecimalField(Field):
         if self.max_digits is not None and total_digits > self.max_digits:
             self.raise_error('max_digits', max_digits=self.max_digits)
         if self.decimal_places is not None and decimal_places > self.decimal_places:
-            self.raise_error('max_decimal_places', max_decimal_places=self.decimal_places)
+            self.raise_error('max_decimal_places',
+                             max_decimal_places=self.decimal_places)
         if self.max_whole_digits is not None and whole_digits > self.max_whole_digits:
-            self.raise_error('max_whole_digits', max_whole_digits=self.max_whole_digits)
+            self.raise_error('max_whole_digits',
+                             max_whole_digits=self.max_whole_digits)
         return value
 
     def quantize(self, value):

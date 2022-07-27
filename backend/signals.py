@@ -1,11 +1,14 @@
+import importlib
 import json
 import os
+from srf.nacos_ext.nacos_plugin import nacos_client
+from tasks import nacos_beat
 
 from tortoise.expressions import Q
 
 from apps import app
 from apps.system.models import Permissions, Models, Users, Roles, Groups
-from settings import EXECUTE_LOG_FOLDER
+from settings import *
 from srf.encryption_algorithm import genearteMD5
 from srf.mq_ext.pulsar_plugin import pulsar_producer, UiSelectorSchema
 
@@ -120,30 +123,69 @@ async def update_superadmin_info(app, loop):
     await superadmin.groups.add(*supergroup)
 
 
-@app.before_server_start
+# @app.before_server_start
 async def create_nacose_service(app, loop):
-    pass
+    """在服务器启动时初始化nacos命名空间、服务及实例并开始后台beat"""
+    res = nacos_client.get_namespace()[0]
+    namespace_exists = False
+    if res['code'] == 200:
+        for namespace in res['data']:
+            if namespace['namespace'] == NACOS_NAMESPACE:
+                namespace_exists = True
+                break
+            else:
+                continue
+    else:
+        raise Exception("get namespace error")
+    if not namespace_exists:
+        res = nacos_client.create_namespace(NACOS_NAMESPACE, NACOS_NAMESPACE, "test platform")[0]
+        if not res:
+            raise Exception("create namespace error")
+    res = nacos_client.get_service(NACOS_NAMESPACE, NACOS_SERVICENAME, groupName=NACOS_GROUP)[0]
+    if 'service not found' in res:
+        res = nacos_client.create_service(NACOS_SERVICENAME, namespaceId=NACOS_NAMESPACE, groupName=NACOS_GROUP)[0]
+        if 'ok' not in res:
+            raise Exception("create service error")
+    await create_nacose_instance()
 
 
-@app.before_server_start
-async def create_nacose_instance(app, loop):
-    pass
+async def create_nacose_instance():
+    ip = '192.168.145.128'
+    res = nacos_client.register_instance(ip, PORT, NACOS_SERVICENAME, namespaceId=NACOS_NAMESPACE, groupName=NACOS_GROUP, enabled=True, healthy=True, ephemeral=NACOS_EPHEMERAL)[0]
+    if 'ok' not in res:
+        raise Exception("create instance error")
+    await send_nacos_beat(NACOS_SERVICENAME, beat={"ip": ip, "port": PORT}, groupName=NACOS_GROUP, ephemeral=NACOS_EPHEMERAL)
 
 
-@app.before_server_start
+# @app.before_server_start
 async def create_nacose_config(app, loop):
-    pass
+    """在服务器启动时将mysql及redis共享至nacos配置"""
+    res = nacos_client.get_config('redis', NACOS_GROUP, NACOS_NAMESPACE)[0]
+    if 'config data not exist' in res:
+        res = nacos_client.publish_config('redis', NACOS_GROUP, {"host": REDIS_HOST, "port": REDIS_PORT, "password": REDIS_PASSWORD}, NACOS_NAMESPACE)
+        if res['code'] != 200:
+            raise Exception("create config error")
+    res = nacos_client.get_config('mysql', NACOS_GROUP, NACOS_NAMESPACE)[0]
+    if 'config data not exist' in res:
+        res = nacos_client.publish_config('mysql', NACOS_GROUP, {"host": DB_HOST, "port": DB_NAME, "username": DB_USER, "password": REDIS_PASSWORD, "db": DB_NAME}, NACOS_NAMESPACE)
+        if res['code'] != 200:
+            raise Exception("create config error")
 
-
-@app.before_server_start
-async def send_nacos_beat(app, loop):
+async def send_nacos_beat(
+    serviceName: str,
+    beat: dict,
+    groupName: str = None,
+    ephemeral: bool = None
+):
     """_summary_
 
     Args:
-        app (_type_): _description_
-        loop (_type_): _description_
+        serviceName (str): 服务名称
+        beat (dict): 心跳信息
+        groupName (str, optional): 组名称. Defaults to None.
+        ephemeral (bool, optional): 是否临时实例. Defaults to None.
     """
-    pass
+    app.add_task(nacos_beat(serviceName, beat, groupName, ephemeral), name='nacos_heartbeat')
 
 
 @app.signal('testcase.run.<exec>')

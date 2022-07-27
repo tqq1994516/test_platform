@@ -6,6 +6,7 @@
 # @Project : test_platform
 # @Description : models file
 from enum import IntEnum
+from os import defpath
 
 from tortoise import fields
 
@@ -116,6 +117,7 @@ class Permissions(DataModel):
 
 class Tags(DataModel):
     name = fields.CharField(50, unique=True, description="标签名称")
+    color = fields.CharField(50, default='red', null=True, description="标签颜色")
     tag_type = fields.IntEnumField(TagType, description="标签类型")
     description = fields.CharField(150, default='', null=True, description="标签描述")
 

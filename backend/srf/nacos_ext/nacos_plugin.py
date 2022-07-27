@@ -1,8 +1,10 @@
 import json
+from typing import Union
 import requests
 from requests.adapters import HTTPAdapter
+from sanic.log import logger
 
-from settings import NACOS_HOST, NACOS_PORT
+from settings import NACOS_HOST, NACOS_PORT, NACOS_SSL
 
 
 class NacosClient:
@@ -11,17 +13,21 @@ class NacosClient:
     SERVICE_BASE_URL = '''/nacos/v1/ns/service'''
     NAMESPACE_BASE_URL = '''/nacos/v1/console/namespaces'''
 
-    def __init__(self, ssl=False, log=None):
+    def __init__(self, ssl=NACOS_SSL):
         self.request = requests.session()
         self.request.mount("http://", HTTPAdapter(max_retries=3))
         self.request.mount("https://", HTTPAdapter(max_retries=3))
-        self.base_host = 'http://' if not ssl else 'https://' + NACOS_HOST + ':' + NACOS_PORT
-        self.log = log
+        self.base_host = f"{'http://' if not ssl else 'https://'}{NACOS_HOST}:{NACOS_PORT}"
+        self.log = logger
 
     def __responseHa(self, res):
         self.log.info(f"响应信息：{res.text}")
-        ret = json.loads(res.text)
-        time = res.elapsed.total_seconds()
+        try:
+            ret = json.loads(res.text)
+            time = res.elapsed.total_seconds()
+        except Exception as e:
+            ret = res.text
+            time = -1
         return ret, time
 
     def call_api(self, data, session=None, timeout=30):
@@ -46,7 +52,7 @@ class NacosClient:
         dataId: str,
         group: str,
         tenant: str = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         获取配置
         :param dataId: 配置的唯一标识
@@ -84,7 +90,7 @@ class NacosClient:
         contentMD5: str,
         timeout: int = 30000,
         tenant: str = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         获取配置
         :param dataId: 配置的唯一标识
@@ -106,7 +112,7 @@ class NacosClient:
             f"{',tenant:' + tenant if tenant else ''}"
         )
         data = {
-            "json": {
+            "data": {
                 "Listening-Configs":
                     f"{dataId}^2{group}^2{contentMD5}"
                     f"{'^2' + tenant + '^1' if tenant else '^1'}"
@@ -121,15 +127,17 @@ class NacosClient:
         self,
         dataId: str,
         group: str,
-        content: str,
-        tenant: str = None
-    ) -> tuple(str, float):
+        content: Union[str, dict],
+        tenant: str = None,
+        type: str = "json",
+    ) -> tuple:
         """
         发布配置
         :param dataId: 配置的唯一标识
         :param group: 配置的分组
         :param content: 配置的内容
         :param tenant: 租户
+        :param type: 配置的类型
         :return: 配置值
 
         err code:
@@ -144,16 +152,18 @@ class NacosClient:
             f"{',tenant:' + tenant if tenant else ''}"
         )
         data = {
-            "json": {
+            "data": {
                 "dataId": dataId,
                 "group": group,
-                "content": content,
+                "content": content if isinstance(content, str) else json.dumps(content)
             },
             "method": "POST",
             "url": self.base_host + self.CONFIG_BASE_URL
         }
         if tenant:
-            data["json"]["tenant"] = tenant
+            data["data"]["tenant"] = tenant
+        if not isinstance(content, str):
+            data["data"]['type'] = type
         return self.call_api(data=data)
 
     def delete_config(
@@ -161,7 +171,7 @@ class NacosClient:
         dataId: str,
         group: str,
         tenant: str = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         删除配置
         :param dataId: 配置的唯一标识
@@ -204,8 +214,8 @@ class NacosClient:
         metadata: str = None,
         clusterName: str = None,
         groupName: str = None,
-        ephemeral: bool = None,
-    ) -> tuple(str, float):
+        ephemeral: bool = False,
+    ) -> tuple:
         """
         注册实例
         :param appId: 应用id
@@ -231,6 +241,7 @@ class NacosClient:
         """
         self.log.info(
             f"注册实例的参数是： serviceName:{serviceName},ip:{ip},port:{port}"
+            f"',ephemeral:{ephemeral}"
             f"{',namespaceId:' + namespaceId if namespaceId else ''}"
             f"{',weight:' + str(weight) if weight else ''}"
             f"{',enabled:' + str(enabled) if enabled else ''}"
@@ -238,33 +249,32 @@ class NacosClient:
             f"{',metadata:' + metadata if metadata else ''}"
             f"{',clusterName:' + clusterName if clusterName else ''}"
             f"{',groupName:' + groupName if groupName else ''}"
-            f"{',ephemeral:' + str(ephemeral) if ephemeral else ''}"
+
         )
         data = {
-            "json": {
+            "data": {
                 "ip": ip,
                 "port": port,
-                "serviceName": serviceName
+                "serviceName": serviceName,
+                "ephemeral": ephemeral
             },
             "method": "POST",
             "url": self.base_host + self.INSTANCE_BASE_URL
         }
         if namespaceId:
-            data["json"]["namespaceId"] = namespaceId
+            data["data"]["namespaceId"] = namespaceId
         if weight:
-            data["json"]["weight"] = weight
+            data["data"]["weight"] = weight
         if enabled:
-            data["json"]["enabled"] = enabled
+            data["data"]["enabled"] = enabled
         if healthy:
-            data["json"]["healthy"] = healthy
+            data["data"]["healthy"] = healthy
         if metadata:
-            data["json"]["metadata"] = metadata
+            data["data"]["metadata"] = metadata
         if clusterName:
-            data["json"]["clusterName"] = clusterName
+            data["data"]["clusterName"] = clusterName
         if groupName:
-            data["json"]["groupName"] = groupName
-        if ephemeral:
-            data["json"]["ephemeral"] = ephemeral
+            data["data"]["groupName"] = groupName
         return self.call_api(data=data)
 
     def cancellation_instance(
@@ -276,7 +286,7 @@ class NacosClient:
         groupName: str = None,
         clusterName: str = None,
         ephemeral: bool = None,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         取消注册实例
         :param serviceName: 应用名称
@@ -333,7 +343,7 @@ class NacosClient:
         clusterName: str = None,
         groupName: str = None,
         ephemeral: bool = None,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         更新实例
         :param serviceName: 应用名称
@@ -383,11 +393,11 @@ class NacosClient:
         if ephemeral:
             data["params"]["ephemeral"] = ephemeral
         if weight:
-            data["json"]["weight"] = weight
+            data["params"]["weight"] = weight
         if enabled:
-            data["json"]["enabled"] = enabled
+            data["params"]["enabled"] = enabled
         if metadata:
-            data["json"]["metadata"] = metadata
+            data["params"]["metadata"] = metadata
         return self.call_api(data=data)
 
     def get_instance(
@@ -397,7 +407,7 @@ class NacosClient:
         clusters: str = None,
         groupName: str = None,
         healthyOnly: bool = False,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         获取实例
         :param serviceName: 应用名称
@@ -448,7 +458,7 @@ class NacosClient:
         groupName: str = None,
         healthyOnly: bool = False,
         ephemeral: bool = None,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         获取实例详情
         :param serviceName: 应用名称
@@ -502,8 +512,8 @@ class NacosClient:
         serviceName: str,
         beat: dict,
         groupName: str = None,
-        ephemeral: bool = None
-    ) -> tuple(str, float):
+        ephemeral: bool = False
+    ) -> tuple:
         """
         发送心跳
         :param serviceName: 应用名称
@@ -521,21 +531,20 @@ class NacosClient:
         """
         self.log.info(
             f"发送心跳的参数是： serviceName:{serviceName}"
+            f",ephemeral:{ephemeral}"
             f"{',groupName:' + groupName if groupName else ''}"
-            f"{',ephemeral:' + str(ephemeral) if ephemeral else ''}"
         )
         data = {
             "params": {
                 "serviceName": serviceName,
-                "beat": json.dumps(beat)
+                "beat": json.dumps(beat),
+                "ephemeral": ephemeral
             },
             "method": "PUT",
             "url": self.base_host + self.INSTANCE_BASE_URL + '/beat'
         }
         if groupName:
             data["params"]["groupName"] = groupName
-        if ephemeral:
-            data["params"]["ephemeral"] = ephemeral
         return self.call_api(data=data)
 
     def create_service(
@@ -546,7 +555,7 @@ class NacosClient:
         groupName: str = None,
         metadata: str = None,
         selector: dict = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         创建服务
         :param serviceName: 服务名称
@@ -573,22 +582,22 @@ class NacosClient:
             f"{',selector:' + json.dumps(selector) if selector else ''}"
         )
         data = {
-            "json": {
+            "data": {
                 "serviceName": serviceName,
             },
             "method": "POST",
             "url": self.base_host + self.SERVICE_BASE_URL
         }
         if namespaceId:
-            data["json"]["namespaceId"] = namespaceId
+            data["data"]["namespaceId"] = namespaceId
         if protectThreshold:
-            data["json"]["protectThreshold"] = protectThreshold
+            data["data"]["protectThreshold"] = protectThreshold
         if groupName:
-            data["json"]["groupName"] = groupName
+            data["data"]["groupName"] = groupName
         if metadata:
-            data["json"]["metadata"] = metadata
+            data["data"]["metadata"] = metadata
         if selector:
-            data["json"]["selector"] = json.dumps(selector)
+            data["data"]["selector"] = json.dumps(selector)
         return self.call_api(data=data)
 
     def delete_service(
@@ -596,7 +605,7 @@ class NacosClient:
         serviceName: str,
         namespaceId: str = None,
         groupName: str = None,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         删除服务
         :param serviceName: 服务名称
@@ -637,7 +646,7 @@ class NacosClient:
         groupName: str = None,
         metadata: str = None,
         selector: dict = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         更新服务
         :param serviceName: 服务名称
@@ -687,7 +696,7 @@ class NacosClient:
         serviceName: str,
         namespaceId: str = None,
         groupName: str = None,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         查询服务
         :param serviceName: 服务名称
@@ -726,7 +735,7 @@ class NacosClient:
         pageSize: int = 20,
         namespaceId: str = None,
         groupName: str = None,
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         查询服务列表
         :param pageNo: 页码
@@ -770,7 +779,7 @@ class NacosClient:
         namespaceId: str = None,
         groupName: str = None,
         clusterName: str = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         更新实例健康状态
         :param serviceName: 服务名称
@@ -813,7 +822,7 @@ class NacosClient:
             data["params"]["clusterName"] = clusterName
         return self.call_api(data=data)
 
-    def get_namespace(self) -> tuple(str, float):
+    def get_namespace(self) -> tuple:
         """
         查询命名空间
         :return: 配置值
@@ -836,7 +845,7 @@ class NacosClient:
         namespaceName: str,
         customNamespaceId: str,
         namespaceDesc: str = None
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         创建命名空间
         :param namespaceName: 命名空间名称
@@ -857,7 +866,7 @@ class NacosClient:
             f"{',namespaceDesc:' + namespaceDesc if namespaceDesc else ''}"
         )
         data = {
-            "json": {
+            "data": {
                 "namespaceName": namespaceName,
                 "customNamespaceId": customNamespaceId,
             },
@@ -865,7 +874,7 @@ class NacosClient:
             "url": self.base_host + self.NAMESPACE_BASE_URL
         }
         if namespaceDesc:
-            data["params"]["namespaceDesc"] = namespaceDesc
+            data["data"]["namespaceDesc"] = namespaceDesc
         return self.call_api(data=data)
 
     def update_namespace(
@@ -873,7 +882,7 @@ class NacosClient:
         namespaceName: str,
         customNamespaceId: str,
         namespaceDesc: str
-    ) -> tuple(str, float):
+    ) -> tuple:
         """
         更新命名空间
         :param namespaceName: 命名空间名称
@@ -894,7 +903,7 @@ class NacosClient:
             f",namespaceDesc:{namespaceDesc}"
         )
         data = {
-            "json": {
+            "data": {
                 "namespaceName": namespaceName,
                 "customNamespaceId": customNamespaceId,
             },
@@ -905,7 +914,7 @@ class NacosClient:
             data["params"]["namespaceDesc"] = namespaceDesc
         return self.call_api(data=data)
 
-    def delete_namespace(self, namespaceId: str) -> tuple(str, float):
+    def delete_namespace(self, namespaceId: str) -> tuple:
         """
         删除命名空间
         :param namespaceId: 命名空间id
@@ -920,10 +929,13 @@ class NacosClient:
         """
         self.log.info(f"删除命名空间的参数是： namespaceId:{namespaceId}")
         data = {
-            "json": {
+            "data": {
                 "namespaceId": namespaceId,
             },
             "method": "DELETE",
             "url": self.base_host + self.NAMESPACE_BASE_URL
         }
         return self.call_api(data=data)
+
+
+nacos_client = NacosClient()

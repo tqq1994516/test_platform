@@ -1,26 +1,33 @@
 <template>
-  <BasicTable @register="registerTable">
-    <template #headerTop>
-      <a-alert type="info" show-icon>
-        <template #message>
-          <template v-if="checkedKeys.length > 0">
-            <span>已选中{{ checkedKeys.length }}条记录(可跨页)</span>
-            <a-button type="link" @click="checkedKeys = []" size="small">清空</a-button>
+  <div>
+    <BasicTable @register="registerTable">
+      <template #headerTop>
+        <Alert type="info" show-icon>
+          <template #message>
+            <template v-if="checkedKeys.length > 0">
+              <span>已选中{{ checkedKeys.length }}条记录(可跨页)</span>
+              <a-button type="link" @click="checkedKeys = []" size="small">清空</a-button>
+            </template>
+            <template v-else>
+              <span>未选中任何项目</span>
+            </template>
           </template>
-          <template v-else>
-            <span>未选中任何项目</span>
-          </template>
-        </template>
-      </a-alert>
-    </template>
-    <template #action="{ record }">
-      <TableAction :actions="setActions(record)" :dropDownActions="setDropDownActions(record)"></TableAction>
-    </template>
-    <template #toolbar>
-      <a-button type="primary" @click="getFormValues">新增</a-button>
-      <a-button type="error" @click="getFormValues">批量删除</a-button>
-    </template>
-  </BasicTable>
+        </Alert>
+      </template>
+      <template #tags="{ record }">
+        <span>
+          <Tag v-for="tag in record.tags" :key="tag.id" :color="tag.color">{{ tag.name }}</Tag>
+        </span>
+      </template>
+      <template #action="{ record }">
+        <TableAction :actions="setActions(record)" :dropDownActions="setDropDownActions(record)"></TableAction>
+      </template>
+      <template #toolbar>
+        <a-button type="primary" @click="addProject">新增</a-button>
+        <a-button type="error" @click="batchDelProject">批量删除</a-button>
+      </template>
+    </BasicTable>
+  </div>
 </template>
 <script lang="ts" setup>
 import { ActionItem, BasicTable, useTable } from '/@/components/Table';
@@ -29,12 +36,19 @@ import TableAction from '/@/components/Table/src/components/TableAction.vue';
 import { projectInfoList } from '/@/api/projectInfo/project/project';
 import { ProjectInfoListResult } from '/@/api/projectInfo/projectModel';
 import { getUser } from '/@/api/sys/user';
-import { ref } from 'vue';
+import { useUsersStore, UserSimpleState } from '/@/store/modules/user';
+import { ref, Ref } from 'vue';
 import { getFormConfig } from './tableData';
-var user_list = new Map();
+import { Alert, Tag } from 'ant-design-vue';
+import { useRouter } from 'vue-router';
+// TODO：动态formconfig
+// TODO: 后台国际化
+const usersStore = useUsersStore();
+const router = useRouter();
 const checkedKeys = ref<Array<string | number>>([]);
 const [registerTable] = useTable({
   canResize: true,
+  clickToRowSelect: false,
   title: '项目信息',
   titleHelpMessage: '项目相关信息',
   api: projectInfoList,
@@ -48,79 +62,116 @@ const [registerTable] = useTable({
   },
   rowKey: 'id',
   showTableSetting: true,
-  loading: true,
+  tableSetting: {
+    redo: true,
+    size: true,
+    setting: true,
+    fullScreen: true,
+  },
   rowSelection: {
     type: 'checkbox',
-    selectedRowKeys: checkedKeys.value,
+    selectedRowKeys: checkedKeys,
     onChange: onSelectChange,
   },
   actionColumn: {
     width: 280,
     title: '操作',
     dataIndex: 'action',
+    fixed: 'right',
     slots: { customRender: 'action' },
   },
 });
-function viewProject(recode: Recordable) {
-  console.log(recode);
+function addProject() {
+  router.push({
+    name: 'ProjectDetail',
+    params: { action: 'add' },
+  });
 }
-function editProject(recode: Recordable) {
-  console.log(recode);
+function batchDelProject() {
+  console.log(checkedKeys.value);
 }
-function delProject(recode: Recordable) {
-  console.log(recode);
+function viewProject(record: Recordable) {
+  router.push({
+    name: 'ProjectDetail',
+    params: { id: record.id, action: 'view' },
+  });
 }
-function copyProject(recode: Recordable) {
-  console.log(recode);
+function editProject(record: Recordable) {
+  router.push({
+    name: 'ProjectDetail',
+    params: { id: record.id, action: 'edit' },
+  });
+}
+function delProject(record: Recordable) {
+  console.log(record);
+}
+function copyProject(record: Recordable) {
+  console.log(record);
 }
 async function resetUsers(result: ProjectInfoListResult): Promise<ProjectInfoListResult> {
+  // 转换用户信息
   for (const key in result) {
+    const user_info = ref<UserSimpleState>({});
     for (const master in result[key].masters) {
-      if (!user_list.has(result[key].masters[master])) {
-        const { results } = await getUser(result[key].masters[master]);
-        console.log(results);
-        user_list.set(results[0].id, results[0].username);
-      }
-      result[key].masters[master] = user_list.get(result[key].masters[master]);
+      await checkUser(result[key].masters[master]['user_id'], user_info);
+      result[key].masters[master] = user_info.value['username'];
     }
     for (const member in result[key].members) {
-      if (!user_list.has(result[key].members[member])) {
-        const { results } = await getUser(result[key].members[member]);
-        user_list.set(results[0].id, results[0].username);
-      }
-      result[key].members[member] = user_list.get(result[key].members[member]);
+      await checkUser(result[key].members[member]['user_id'], user_info);
+      result[key].members[member] = user_info.value['username'];
     }
-    if (!user_list.has(result[key].owner)) {
-      const { results } = await getUser(+result[key].owner);
-      user_list.set(results[0].id, results[0].username);
-    }
-    result[key].owner = user_list.get(result[key].owner);
+    await checkUser(result[key].owner['user_id'], user_info);
+    result[key].owner = user_info.value['username'];
   }
   return result;
 }
-function setActions(recode: Recordable): ActionItem[] {
+async function checkUser(user_id: number | string, user_info: Ref<UserSimpleState>) {
+  if (!usersStore.users.value && typeof user_id === 'number') {
+    const { id, username } = await getUser(user_id);
+    user_info.value['id'] = id;
+    user_info.value['username'] = username;
+    usersStore.addUser(user_info);
+  } else if (usersStore.users.value && typeof user_id === 'number') {
+    for (const user of usersStore.users.value) {
+      if (user.id === user_id) {
+        user_info.value = user;
+        break;
+      }
+    }
+  }
+}
+
+function setActions(record: Recordable): ActionItem[] {
   return [
     {
       label: '查看',
       icon: 'carbon:view-filled',
       divider: true,
-      onClick: viewProject.bind(null, recode),
+      onClick: viewProject.bind(null, record),
     },
     {
       label: '编辑',
       icon: 'akar-icons:edit',
       divider: true,
-      onClick: editProject.bind(null, recode),
+      onClick: editProject.bind(null, record),
     },
-    { label: '删除', icon: 'fluent:delete-16-regular', onClick: delProject.bind(null, recode) },
+    {
+      label: '删除',
+      icon: 'fluent:delete-16-regular',
+      popConfirm: {
+        title: '确定删除该项目吗？',
+        placement: 'left',
+        confirm: delProject.bind(null, record),
+      },
+    },
   ];
 }
-function setDropDownActions(recode: Recordable): ActionItem[] {
+function setDropDownActions(record: Recordable): ActionItem[] {
   return [
     {
       label: '复制',
       icon: 'ant-design:copy-filled',
-      onClick: copyProject.bind(null, recode),
+      onClick: copyProject.bind(null, record),
     }
 
   ]

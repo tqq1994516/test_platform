@@ -1,5 +1,8 @@
-import { FormProps, FormSchema } from '/@/components/Table';
+import { getUsers } from '/@/api/sys/user';
+import { ref } from 'vue';
+import { FormProps } from '/@/components/Table';
 import { BasicColumn } from '/@/components/Table/src/types/table';
+import { useDebounceFn } from '@vueuse/core';
 
 export function getBasicColumns(): BasicColumn[] {
   return [
@@ -7,18 +10,29 @@ export function getBasicColumns(): BasicColumn[] {
       title: 'ID',
       dataIndex: 'id',
       fixed: 'left',
-      width: 200,
+      width: 80,
       sorter: true,
     },
     {
       title: '项目名称',
       dataIndex: 'name',
-      width: 150,
+      width: 250,
       sorter: true,
     },
     {
       title: '项目描述',
       dataIndex: 'description',
+    },
+    {
+      title: '项目标签',
+      dataIndex: 'tags',
+      width: 200,
+      slots: { customRender: 'tags' },
+    },
+    {
+      title: '项目状态',
+      dataIndex: 'status',
+      width: 80,
     },
     {
       title: '管理员',
@@ -33,7 +47,7 @@ export function getBasicColumns(): BasicColumn[] {
     {
       title: '创建者',
       dataIndex: 'owner',
-      width: 50,
+      width: 100,
       defaultHidden: true,
     },
     {
@@ -52,6 +66,13 @@ export function getBasicColumns(): BasicColumn[] {
 }
 
 export function getFormConfig(): Partial<FormProps> {
+  const params = ref({});
+  function onSearch(value: string) {
+    params.value = {
+      "username": `@${value}`,
+    }
+  }
+  
   return {
     labelWidth: 100,
     schemas: [
@@ -81,6 +102,17 @@ export function getFormConfig(): Partial<FormProps> {
           xl: 6,
           xxl: 4,
         },
+        componentProps: {
+          filterOption: false,
+          showSearch: true,
+          resultField: "results",
+          labelField: "username",
+          valueField: "id",
+          params: params,
+          allowClear: true,
+          onSearch: useDebounceFn(onSearch, 300),
+          api: getUsers
+        },
       },
       {
         field: `member`,
@@ -89,6 +121,17 @@ export function getFormConfig(): Partial<FormProps> {
         colProps: {
           xl: 6,
           xxl: 4,
+        },
+        componentProps: {
+          filterOption: false,
+          showSearch: true,
+          resultField: "results",
+          labelField: "username",
+          valueField: "id",
+          params: params,
+          allowClear: true,
+          onSearch: useDebounceFn(onSearch, 300),
+          api: getUsers
         },
       },
       {

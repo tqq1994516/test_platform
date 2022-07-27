@@ -5,6 +5,9 @@ export default {
   project: {
     title: 'Project Info',
   },
+  projectDetail: {
+    title: 'Project Detail',
+  },
   env: {
     title: 'Env Manager',
   },

@@ -6,9 +6,16 @@
 # @Project : test_platform
 # @Description : models file
 
+from enum import IntEnum
 from tortoise import fields
 
 from srf.models import DataModel
+
+
+class StatusType(IntEnum):
+    INIT = 1  # 立项
+    LTS = 2  # 长期维护
+    PERFECT = 3  # 完善
 
 
 class ProjectInfo(DataModel):
@@ -18,10 +25,13 @@ class ProjectInfo(DataModel):
                                      description="管理员")
     members = fields.ManyToManyField("system.Users", through='t_project_members', related_name="project_members",
                                      description="项目成员")
+    status = fields.IntEnumField(StatusType, default=1, description="项目状态")
+    tags = fields.ManyToManyField("system.Tags", description="标签")
 
     class Meta:
         table = 't_project_info'
         table_description = "项目信息表"
+        depth = 1
 
     def __str__(self):
         return self.name
@@ -29,7 +39,7 @@ class ProjectInfo(DataModel):
 
 class Envs(DataModel):
     name = fields.CharField(50, description="环境名称")
-    description = fields.TextField(default='', null=True,description="环境描述")
+    description = fields.TextField(default='', null=True, description="环境描述")
     domain = fields.CharField(150, unique=True, description="环境域名")
     project = fields.ForeignKeyField("project_info.ProjectInfo", null=True, description="所属项目")
 

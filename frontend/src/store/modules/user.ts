@@ -25,6 +25,32 @@ interface UserState {
   lastUpdateTime: number;
 }
 
+interface UserSimpleState {
+  id: number;
+  username: string;
+}
+
+interface UsersState {
+  users: UserSimpleState[];
+}
+
+export const useUsersStore = defineStore({
+  id: 'app-users',
+  state: (): UsersState => ({
+    users: [],
+  }),
+  getters: {
+    getUsers(): UsersState {
+      return this.users;
+    },
+  },
+  actions: {
+    addUser(user: UserSimpleState) {
+      this.users.push(user);
+    },
+  },
+});
+
 export const useUserStore = defineStore({
   id: 'app-user',
   state: (): UserState => ({

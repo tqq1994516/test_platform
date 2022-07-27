@@ -75,4 +75,8 @@ PULSAR_TENANTS = 'pro_used' if not IS_DEV else 'test_used'
 # nacos config
 NACOS_HOST = '10.10.112.66'
 NACOS_PORT = '38848'
+NACOS_GROUP = 'test_platform'
+NACOS_SERVICENAME = 'test_platform'
 NACOS_NAMESPACE = 'test_platform'
+NACOS_SSL = False
+NACOS_EPHEMERAL = False

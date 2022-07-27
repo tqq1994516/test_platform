@@ -1,4 +1,4 @@
-#  (2022-06-08)
+#  (2022-07-27)
 
 
 ### ✨ Features
@@ -7,13 +7,14 @@
 * **backend,frontend**: change restful api view class and add project manager page ([2a5f024](https://github.com/tqq1994516/test_platform/commit/2a5f024))
 * **backend**: docking jwt ([5f3d534](https://github.com/tqq1994516/test_platform/commit/5f3d534))
 * **backend**: docking jwt ([8ef214c](https://github.com/tqq1994516/test_platform/commit/8ef214c))
+* **front**: perfect project view ([3fb3d51](https://github.com/tqq1994516/test_platform/commit/3fb3d51))
 * **signals,users**: add backend init signals and edit frontend login ([5f29432](https://github.com/tqq1994516/test_platform/commit/5f29432))
 
 
 ### 🎫 Chores
 
 * **build**: add frontend build type dependent ([449f2c9](https://github.com/tqq1994516/test_platform/commit/449f2c9))
-* **environment**: rename environment ([3ab62ed](https://github.com/tqq1994516/test_platform/commit/3ab62ed))
+* **environment**: rename environment ([96ecb0e](https://github.com/tqq1994516/test_platform/commit/96ecb0e))
 * **var**: remove var dir ignore ([0f91fd6](https://github.com/tqq1994516/test_platform/commit/0f91fd6))
 
 

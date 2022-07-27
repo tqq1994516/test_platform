@@ -35,4 +35,3 @@ testcase_manager.add_route(TestcaseExecuteLogsView.as_view(), '/testcase_execute
                            methods=['GET', 'PUT', 'DELETE', 'PATCH', 'POST'])
 testcase_manager.add_route(testcase_log_read, 'testcase_execute_log_read/', methods=['GET'])
 testcase_manager.add_websocket_route(testcase_run, '/testcase_run')
-
