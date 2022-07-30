@@ -20,7 +20,7 @@ RUN npm install -g pnpm
 # pnpm换源
 RUN pnpm config set registry https://registry.npm.taobao.org
 # 安装/更新前端依赖
-WORKDIR /frontend
+WORKDIR /test_platform
 RUN pnpm install
 
 FROM build AS development

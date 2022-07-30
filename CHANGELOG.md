@@ -21,12 +21,13 @@
 ### 🐛 Bug Fixes
 
 * **backend**: optimize m2m fk field internal to external ([7992fea](https://github.com/tqq1994516/test_platform/commit/7992fea))
+* **dockerfile**: fix frontend Dockerfile dir err ([f334640](https://github.com/tqq1994516/test_platform/commit/f334640))
 * **serializers**: fixing serializers bug ([15037bf](https://github.com/tqq1994516/test_platform/commit/15037bf))
 
 
 ### 👷 Build System
 
-* **docker**: add dockerfile and docker-compose.yaml ([9758b1a](https://github.com/tqq1994516/test_platform/commit/9758b1a))
+* **docker**: add dockerfile and docker-compose.yaml ([89edf42](https://github.com/tqq1994516/test_platform/commit/89edf42))
 
 
 ### 🔧 Continuous Integration
