@@ -28,7 +28,8 @@
 ### 👷 Build System
 
 * **docker**: add dockerfile and docker-compose.yaml ([89edf42](https://github.com/tqq1994516/test_platform/commit/89edf42))
-* **dockerfile**: remove frontend invalid code ([8a702c8](https://github.com/tqq1994516/test_platform/commit/8a702c8))
+* **dockerfile**: remove frontend invalid code ([957477d](https://github.com/tqq1994516/test_platform/commit/957477d))
+* **requirements.txt**: add python depend on ([9a652d2](https://github.com/tqq1994516/test_platform/commit/9a652d2))
 
 
 ### 🔧 Continuous Integration
