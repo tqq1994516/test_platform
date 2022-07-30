@@ -1,4 +1,4 @@
-#  (2022-07-27)
+#  (2022-07-30)
 
 
 ### ✨ Features
@@ -7,7 +7,7 @@
 * **backend,frontend**: change restful api view class and add project manager page ([2a5f024](https://github.com/tqq1994516/test_platform/commit/2a5f024))
 * **backend**: docking jwt ([5f3d534](https://github.com/tqq1994516/test_platform/commit/5f3d534))
 * **backend**: docking jwt ([8ef214c](https://github.com/tqq1994516/test_platform/commit/8ef214c))
-* **front**: perfect project view ([3fb3d51](https://github.com/tqq1994516/test_platform/commit/3fb3d51))
+* **front**: perfect project view ([b51a4af](https://github.com/tqq1994516/test_platform/commit/b51a4af))
 * **signals,users**: add backend init signals and edit frontend login ([5f29432](https://github.com/tqq1994516/test_platform/commit/5f29432))
 
 
@@ -22,6 +22,11 @@
 
 * **backend**: optimize m2m fk field internal to external ([7992fea](https://github.com/tqq1994516/test_platform/commit/7992fea))
 * **serializers**: fixing serializers bug ([15037bf](https://github.com/tqq1994516/test_platform/commit/15037bf))
+
+
+### 👷 Build System
+
+* **docker**: add dockerfile and docker-compose.yaml ([9758b1a](https://github.com/tqq1994516/test_platform/commit/9758b1a))
 
 
 ### 🔧 Continuous Integration

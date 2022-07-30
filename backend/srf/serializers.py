@@ -520,6 +520,7 @@ class ModelSerializer(Serializer):
         字段转换
         """
         converter = ModelConverter(ModelSerializer)
+        print(converter)
         serializer_fields = BindingDict(self)
         for field_name, field_class in fields.items():
             current_field_class = converter.convert(self, field_class, **self.get_field_kws_by_meta(field_name))
