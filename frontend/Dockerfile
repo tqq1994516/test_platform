@@ -12,8 +12,6 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONIOENCODING UTF-8
 # 安装/更新系统依赖
 RUN apt-get -y update && apt-get install -y vim && apt-get clean all
-# 更新pip
-RUN python -m pip install --upgrade pip
 WORKDIR /test_platform
 ADD ../frontend .
 RUN npm install -g pnpm
