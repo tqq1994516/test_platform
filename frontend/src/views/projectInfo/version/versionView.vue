@@ -7,9 +7,6 @@
             <Card title="基础信息" :bordered="false">
                 <Description @register="register" />
             </Card>
-            <Card title="成员管理" :bordered="false">
-                <MemberTable :members.sync="members" />
-            </Card>
         </PageWrapper>
     </div>
 </template>
@@ -22,25 +19,20 @@ import { useRoute } from 'vue-router';
 import { descSchemas } from './data';
 import { ref } from 'vue';
 import { Description, useDescription } from '/@/components/Description/index';
-import { projectInfo } from '/@/api/projectInfo/project/project';
+import { version } from '/@/api/projectInfo/version/version';
 
 const route = useRoute();
 const go = useGo();
-const title = ref('项目详情');
-const members = ref([])
-async function project() {
-    const res = await projectInfo(route.params.id);
-    for (const member of res.members) {
-        members.value.push({name: member.username})
-    }
-    return res
+const title = ref('版本详情');
+async function versionInfo() {
+    return await version(route.params.id);
 }
 
 const [register] = useDescription({
     title: title.value,
     schema: descSchemas,
     column: 24,
-    data: await project(),
+    data: await versionInfo(),
 
 });
 
@@ -48,10 +40,10 @@ const [register] = useDescription({
 // 页面左侧点击返回链接时的操作
 function goBack() {
     // 返回项目列表页
-    go('/projectInfo/project');
+    go('/projectInfo/version');
 }
 
 function goEdit() {
-    go('/projectInfo/project/edit/' + route.params.id);
+    go('/projectInfo/version/edit/' + route.params.id);
 }
 </script>

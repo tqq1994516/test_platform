@@ -9,7 +9,6 @@
 Provides various authentication policies.
 """
 from sanic import json
-from sanic_babel import lazy_gettext as _
 from sanic_jwt import BaseEndpoint
 from tortoise.expressions import Q
 from ujson import dumps

@@ -4,9 +4,6 @@
             <Card title="基础信息" :bordered="false">
                 <BasicForm @register="register" />
             </Card>
-            <Card title="成员管理" :bordered="false">
-                <MemberTable ref="tableRef" :members="members" />
-            </Card>
             <template #rightFooter>
                 <Space>
                     <a-button @click="reset">重置</a-button>
@@ -19,14 +16,13 @@
 <script lang="ts" setup>
 // TODO: validate
 import { Card, Space } from 'ant-design-vue';
-import MemberTable from './memberTable.vue';
 import { PageWrapper } from '/@/components/Page';
 import { useGo } from '/@/hooks/web/usePage';
 import { schemas } from './data';
 import { ref } from 'vue';
 import { BasicForm, useForm } from '/@/components/Form';
 
-const title = ref('新增项目');
+const title = ref('新增版本');
 const members = ref([])
 const tableRef = ref<{ getDataSource: () => any, setTableData: (data: any) => any } | null>(null);
 
@@ -57,6 +53,6 @@ const go = useGo();
 // 页面左侧点击返回链接时的操作
 function goBack() {
     // 返回项目列表页
-    go('/projectInfo/project');
+    go('/projectInfo/version');
 }
 </script>

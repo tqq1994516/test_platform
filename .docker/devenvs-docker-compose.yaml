@@ -1,0 +1,61 @@
+name: test_platform-amazing_brown
+services:
+  backend:
+    build:
+      context: C:\Users\Administrator\PycharmProjects\test_platform\backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: backend
+    hostname: backend
+    labels:
+      com.docker.devenvironments.compose: "true"
+      com.docker.devenvironments.compose.build: "true"
+      com.docker.devenvironments.name: test_platform-amazing_brown
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 8800
+      published: "8800"
+      protocol: tcp
+    - mode: ingress
+      target: 8801
+      published: "8801"
+      protocol: tcp
+  frontend:
+    build:
+      context: C:\Users\Administrator\PycharmProjects\test_platform\frontend
+      dockerfile: Dockerfile
+      target: development
+    command:
+    - infinity
+    container_name: frontend
+    entrypoint:
+    - sleep
+    init: true
+    labels:
+      com.docker.devenvironments.compose: "true"
+      com.docker.devenvironments.compose.build: "true"
+      com.docker.devenvironments.container: "true"
+      com.docker.devenvironments.name: test_platform-amazing_brown
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 3100
+      published: "3100"
+      protocol: tcp
+    stop_signal: SIGKILL
+    volumes:
+    - type: bind
+      source: C:\Users\Administrator\PycharmProjects\test_platform
+      target: /com.docker.devenvironments.code
+    - type: volume
+      source: vsCodeServerVolume-test_platform-amazing_brown-frontend
+      target: /home/vscode
+networks:
+  default:
+    name: test_platform-amazing_brown_default
+volumes:
+  vsCodeServerVolume-test_platform-amazing_brown-frontend:
+    name: vsCodeServerVolume-test_platform-amazing_brown-frontend

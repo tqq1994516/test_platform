@@ -4,9 +4,6 @@
             <Card title="基础信息" :bordered="false">
                 <BasicForm @register="register" />
             </Card>
-            <Card title="成员管理" :bordered="false">
-                <MemberTable ref="tableRef" :members="members" />
-            </Card>
             <template #rightFooter>
                 <Space>
                     <a-button @click="reset">重置</a-button>
@@ -27,25 +24,16 @@ import { useGo } from '/@/hooks/web/usePage';
 import { schemas } from './data';
 import { ref, watchEffect } from 'vue';
 import { BasicForm, useForm } from '/@/components/Form';
-import { projectInfo } from '/@/api/projectInfo/project/project';
+import { version } from '/@/api/projectInfo/version/version';
 
 const route = useRoute();
-const title = ref('编辑项目');
-const members = ref([])
+const title = ref('编辑版本');
 const tableRef = ref<{ getDataSource: () => any, setTableData: (data: any) => any } | null>(null);
 const mastersOptions = ref<SelectProps['options']>([]);
 const tagsOptions = ref<SelectProps['options']>([]);
 
-async function project() {
-    const res = await projectInfo(route.params.id);
-    const masters = ref<Recordable[]>([])
-    const tags = ref<Recordable[]>([])
-    for (const member of res.members) {
-        members.value.push({ name: member.username })
-    }
-    res.masters.map(m => mastersOptions.value?.push({ label: m.username, m: m.id }))
-    res.tags.map(t => tagsOptions.value?.push({label: t.name, value: t.id}))
-    return { name: res.name, masters: mastersOptions.value, tags: tagsOptions.value, description: res.description }
+async function versionInfo() {
+    return await version(route.params.id);
 }
 
 const [register, { validate, resetFields, setFieldsValue }] = useForm({
@@ -79,6 +67,6 @@ const go = useGo();
 // 页面左侧点击返回链接时的操作
 function goBack() {
     // 返回项目列表页
-    go('/projectInfo/project');
+    go('/projectInfo/version');
 }
 </script>

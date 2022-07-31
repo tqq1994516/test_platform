@@ -45,3 +45,8 @@ export interface MeInfo {
 export interface UserInfoListResult extends BasicListResult {
   results: GetUserInfoModel[];
 }
+
+export interface SimpleUser {
+  user_id: number;
+  username: string;
+}

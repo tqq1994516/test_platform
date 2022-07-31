@@ -6,14 +6,7 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: backend
+    hostname: backend
     ports:
       - "8800:8800"
       - "8801:8801"
-  frontend:
-    build:
-      context: frontend
-      dockerfile: Dockerfile
-      target: development
-    container_name: frontend
-    ports:
-      - "3100:3100"

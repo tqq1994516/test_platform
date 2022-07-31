@@ -10,7 +10,6 @@ import logging
 from pathlib import Path
 
 from sanic import Sanic
-from sanic_babel import Babel
 from sanic_jwt import Initialize
 from tortoise.contrib.sanic import register_tortoise
 
@@ -33,7 +32,6 @@ def create_app():
     sanic_app = Sanic(name=APP_NAME, request_class=SRFRequest)
     sanic_app.update_config(Path.cwd() / config_name)
     sanic_app.update_config(Path.cwd() / cfg_name)
-    Babel(sanic_app, configure_jinja=False)
     AppsHelper(sanic_app)
     RedisExtension(sanic_app)
 

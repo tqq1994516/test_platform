@@ -1,14 +1,10 @@
 import { BasicListResult } from "../baseModel";
+import { SimpleUser } from "../sys/model/userModel";
 
 export interface Tag {
   id: number;
   name: string;
   color: string;
-}
-
-export interface SimpleUser {
-  user_id: number;
-  username: string;
 }
 
 export interface ProjectInfoModel {
@@ -25,4 +21,9 @@ export interface ProjectInfoModel {
 
 export interface ProjectInfoListResult extends BasicListResult {
   results: ProjectInfoModel[];
+}
+
+export interface SimpleProject {
+  project_id: number;
+  name: string;
 }

@@ -31,14 +31,14 @@
 </template>
 <script lang="ts" setup>
 import { ActionItem, BasicTable, useTable } from '/@/components/Table';
-import { getBasicColumns } from './tableData';
+import { getBasicColumns } from './data';
 import TableAction from '/@/components/Table/src/components/TableAction.vue';
 import { projectInfoList } from '/@/api/projectInfo/project/project';
 import { ProjectInfoListResult } from '/@/api/projectInfo/projectModel';
-import { getUser } from '/@/api/sys/user';
+import { checkUser } from '/@/utils/auth';
 import { useUsersStore, UserSimpleState } from '/@/store/modules/user';
-import { ref, Ref } from 'vue';
-import { getFormConfig } from './tableData';
+import { ref } from 'vue';
+import { getFormConfig } from './data';
 import { Alert, Tag } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 // TODO：动态formconfig
@@ -124,21 +124,6 @@ async function resetUsers(result: ProjectInfoListResult): Promise<ProjectInfoLis
     result[key].owner = user_info.value['username'];
   }
   return result;
-}
-async function checkUser(user_id: number | string, user_info: Ref<UserSimpleState>) {
-  if (!usersStore.users.value && typeof user_id === 'number') {
-    const { id, username } = await getUser(user_id);
-    user_info.value['id'] = id;
-    user_info.value['username'] = username;
-    usersStore.addUser(user_info);
-  } else if (usersStore.users.value && typeof user_id === 'number') {
-    for (const user of usersStore.users.value) {
-      if (user.id === user_id) {
-        user_info.value = user;
-        break;
-      }
-    }
-  }
 }
 
 function setActions(record: Recordable): ActionItem[] {

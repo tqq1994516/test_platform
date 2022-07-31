@@ -1,4 +1,4 @@
-#  (2022-07-30)
+#  (2022-07-31)
 
 
 ### ✨ Features
@@ -7,6 +7,7 @@
 * **backend,frontend**: change restful api view class and add project manager page ([2a5f024](https://github.com/tqq1994516/test_platform/commit/2a5f024))
 * **backend**: docking jwt ([5f3d534](https://github.com/tqq1994516/test_platform/commit/5f3d534))
 * **backend**: docking jwt ([8ef214c](https://github.com/tqq1994516/test_platform/commit/8ef214c))
+* **frontend**: add version env view ([d81d8ba](https://github.com/tqq1994516/test_platform/commit/d81d8ba))
 * **front**: perfect project view ([b51a4af](https://github.com/tqq1994516/test_platform/commit/b51a4af))
 * **signals,users**: add backend init signals and edit frontend login ([5f29432](https://github.com/tqq1994516/test_platform/commit/5f29432))
 
@@ -29,7 +30,7 @@
 
 * **docker**: add dockerfile and docker-compose.yaml ([89edf42](https://github.com/tqq1994516/test_platform/commit/89edf42))
 * **dockerfile**: remove frontend invalid code ([957477d](https://github.com/tqq1994516/test_platform/commit/957477d))
-* **requirements.txt**: add python depend on ([9a652d2](https://github.com/tqq1994516/test_platform/commit/9a652d2))
+* **requirements.txt**: add python depend on ([5e558c7](https://github.com/tqq1994516/test_platform/commit/5e558c7))
 
 
 ### 🔧 Continuous Integration

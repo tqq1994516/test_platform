@@ -7,10 +7,10 @@ enum Api {
 
 // Get personal center-basic settings
 
-export function projectInfoList() {
-  return defHttp.get<ProjectInfoListResult>({ url: Api.PROJECT_INFO }, { joinTime: false });
+export function projectInfoList(params?: { name: string }) {
+  params = { page: 1, pageSize: 100, ...params, };
+  return defHttp.get<ProjectInfoListResult>({ url: `${Api.PROJECT_INFO}`, params }, { joinTime: false });
 }
-
 
 export function projectInfo(id: number) {
   return defHttp.get<ProjectInfoModel>({ url: `${Api.PROJECT_INFO}${id}/` });

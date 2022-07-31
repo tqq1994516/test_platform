@@ -4,6 +4,7 @@ __pycache__/
 node_modules
 .vscode
 .history
+.pnpm-store
 
 
 *.py[cod]
@@ -92,7 +93,6 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
